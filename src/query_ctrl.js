@@ -8,7 +8,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   constructor($scope, $injector, uiSegmentSrv) {
     super($scope, $injector);
-    console.log("GenericDatasourceQueryCtrl", uiSegmentSrv);
+    // console.log("GenericDatasourceQueryCtrl", uiSegmentSrv);
     this.scope = $scope;
     this.uiSegmentSrv = uiSegmentSrv
 
@@ -22,8 +22,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       { text: 'Inner Join', value: 'inner_join' },
       { text: 'Full Join', value: 'full_join' }
     ];
-    this.selectMenu = []
-    this.buildSelectMenu()
+    
 
     // this.target.tableSegment = null;
     this.target.target = this.target.target || 'targettest';
@@ -69,14 +68,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     };
 
   }
-  buildSelectMenu() {
-    this.selectMenu = [];
-    const select = {
-      text: 'expression',
-      value: 'Expression',
-    }
-    this.selectMenu.push(select);
-  }
+ 
   getOptions() {
     const options = [];
     options.push(this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
@@ -110,7 +102,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   onLimitChanged() {
-    console.log("onLimitChanged");
+    // console.log("onLimitChanged");
     this.target.limit = this.target.limitSegment.value;
     this.updateRestSql();
   }
@@ -170,7 +162,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   handleWherePartEvent(part, index, event) {
-    console.log("handleWherePartEvent", event);
+    // console.log("handleWherePartEvent", event);
     if (event.name === "get-param-options" && event.param.name === "op") {
       // 暂时只支持展开操作符列表
       const operators = ['=', '<', '<=', '>', '>=', 'CONTAINS', 'STARTSWITH', 'ENDSWITH', 'RANGE', 'IN'];
@@ -516,23 +508,28 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     }
     // ["1", "=", "1"]
     this.target.whereParts.forEach((part) => {
-      console.log(this.target.whereParts);
+
       const suffix = operatorToSuffix[part.params[1]];
       const key = `${part.params[0]}${suffix}`
       if (part.params[1] === "IN") {
         console.log("whereTest", part.params[2], typeof part.params[2]);
         this.target.query.select.filter[key] = JSON.parse(part.params[2]);
-        console.log(this.target.query.select);
+       
       } else {
-        console.log("whereTest", part.params[2]);
         if ((part.params[2].startsWith("\"") && part.params[2].endsWith("\"")) || (part.params[2].startsWith("\'") && part.params[2].endsWith("\'"))) {
           const tmpStr = part.params[2]
           this.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
-          console.log(this.target.query.select);
+          // console.log(this.target.query.select);
         } else if (!isNaN(parseFloat(part.params[2]))) {
           this.target.query.select.filter[key] = parseFloat(part.params[2]);
           console.log(this.target.query.select);
-        } else {
+        }
+        else if (part.params[2].toLowerCase() === "true" ) {          
+          this.target.query.select.filter[key] =true;
+        } else if (part.params[2].toLowerCase() === "false") {
+          this.target.query.select.filter[key] = false;
+        }
+        else {
           return Promise.reject({
             message: 'tetete',
           });
@@ -608,7 +605,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       // update join group by
       joinQuery.query.select.group_by = [];
       query.groups.forEach((part) => {
-        console.log("join_group", part);
+        // console.log("join_group", part);
         joinQuery.query.select.group_by.push(part.params[0]);
       });
       // update join on
@@ -634,7 +631,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
     //update fields
     this.target.fieldParts.forEach((part) => {
-      console.log("fieldParts", part);
+      // console.log("fieldParts", part);
       this.target.query.fields.push(part.params.join("@"));
     });
 
@@ -642,13 +639,13 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.target.query.limit = parseInt(this.target.limit);
     // console.log("UpdateComplete", this.target.query);
     // this.datasource.metricFindQuery(this.target.query || '').then(this.panelCtrl.refresh());
-    console.log(this.target, this.target.query);
+    // console.log(this.target, this.target.query);
     this.target.target = JSON.stringify(this.target.query);
     // this.target.target = this.target.query;
 
-    console.log(this.target, this.target.query);
+    // console.log(this.target, this.target.query);
     this.target.whereParts = this.target.whereParts;
-    console.log("UpdateComplete", this.target.selectionsParts);
+    // console.log("UpdateComplete", this.target.selectionsParts);
     // this.datasource.metricFindQuery(JSON.stringify(this.target.query) || '');
     // this.datasource.query(this.target.query);
     this.panelCtrl.refresh();

@@ -3,7 +3,7 @@ import _ from "lodash";
 export class GenericDatasource {
 
   constructor(instanceSettings, $q, backendSrv, templateSrv) {
-    console.log("instanceSettings", instanceSettings);
+    // console.log("instanceSettings", instanceSettings);
     this.type = instanceSettings.type;
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
@@ -18,7 +18,7 @@ export class GenericDatasource {
   }
 
   query(options) {
-    console.log("query222333Options", options,'1234567');
+    // console.log("query222333Options", options,'1234567');
     var query = this.buildQueryParameters(options);
     // query.targets = query.targets.filter(t => !t.hide)
     // console.log("query222333Query", this.url);

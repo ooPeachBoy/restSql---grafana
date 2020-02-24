@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7,7 +7,7 @@ exports.GenericDatasource = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _lodash = require("lodash");
+var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
@@ -19,7 +19,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
   function GenericDatasource(instanceSettings, $q, backendSrv, templateSrv) {
     _classCallCheck(this, GenericDatasource);
 
-    console.log("instanceSettings", instanceSettings);
+    // console.log("instanceSettings", instanceSettings);
     this.type = instanceSettings.type;
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
@@ -34,9 +34,9 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }
 
   _createClass(GenericDatasource, [{
-    key: "query",
+    key: 'query',
     value: function query(options) {
-      console.log("query222333Options", options, '1234567');
+      // console.log("query222333Options", options,'1234567');
       var query = this.buildQueryParameters(options);
       // query.targets = query.targets.filter(t => !t.hide)
       // console.log("query222333Query", this.url);
@@ -59,17 +59,17 @@ var GenericDatasource = exports.GenericDatasource = function () {
       //   data: query,
       //   method: 'POST'
       // });
-      var queryStr = "?query=" + options.targets[0].target;
-      var formatStr = "&datatype=" + options.targets[0].type;
+      var queryStr = '?query=' + options.targets[0].target;
+      var formatStr = '&datatype=' + options.targets[0].type;
 
       return this.doRequest({
-        url: encodeURI(this.url + ("/query/" + queryStr + formatStr)),
+        url: encodeURI(this.url + ('/query/' + queryStr + formatStr)),
         // url: this.url + '/query/',
         method: 'GET'
       });
     }
   }, {
-    key: "testDatasource",
+    key: 'testDatasource',
     value: function testDatasource() {
       return this.doRequest({
         url: this.url + '/',
@@ -81,7 +81,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "annotationQuery",
+    key: 'annotationQuery',
     value: function annotationQuery(options) {
       var query = this.templateSrv.replace(options.annotation.query, {}, 'glob');
       var annotationQuery = {
@@ -105,7 +105,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "metricFindQuery",
+    key: 'metricFindQuery',
     value: function metricFindQuery(query) {
       console.log("metricFindQuery", query);
       var interpolated = {
@@ -119,7 +119,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       }).then(this.mapToTextValue);
     }
   }, {
-    key: "mapToTextValue",
+    key: 'mapToTextValue',
     value: function mapToTextValue(result) {
       return _lodash2.default.map(result.data, function (d, i) {
         if (d && d.text && d.value) {
@@ -131,7 +131,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "doRequest",
+    key: 'doRequest',
     value: function doRequest(options) {
       options.withCredentials = this.withCredentials;
       options.headers = this.headers;
@@ -139,7 +139,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       return this.backendSrv.datasourceRequest(options);
     }
   }, {
-    key: "buildQueryParameters",
+    key: 'buildQueryParameters',
     value: function buildQueryParameters(options) {
       var _this = this;
 
@@ -162,7 +162,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       return options;
     }
   }, {
-    key: "getTagKeys",
+    key: 'getTagKeys',
     value: function getTagKeys(options) {
       var _this2 = this;
 
@@ -177,7 +177,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       });
     }
   }, {
-    key: "getTagValues",
+    key: 'getTagValues',
     value: function getTagValues(options) {
       var _this3 = this;
 
