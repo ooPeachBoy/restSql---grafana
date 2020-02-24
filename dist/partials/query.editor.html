@@ -1,0 +1,310 @@
+<query-editor-row query-ctrl="ctrl" class="generic-datasource-query-row " has-text-edit-mode="true">
+
+  <!--FORMAT-->
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">FORMAT AS</label>
+      <div class="gf-form-select-wrapper">
+        <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.type"
+          ng-options="f.value as f.text for f in ctrl.formats" ng-change="ctrl.onFormatChanged()"></select>
+      </div>
+    </div>
+  </div>
+
+  <!--FROM-->
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">FROM</label>
+      <metric-segment segment="ctrl.target.tableSegment" get-options="ctrl.getOptions()" on-change="ctrl.onTableChanged()">
+      </metric-segment>
+    </div>
+  </div>
+
+
+  <!--SELECT-->
+  <div class="gf-form-inline" >
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">
+        <span>SELECT</span>
+      </label>
+      </div>
+      <div class="gf-form" ng-repeat="part in ctrl.target.selectionsParts">
+        <sql-part-editor  part="part" class="gf-form-label sql-part"
+          handle-event="ctrl.handleSelectionsPartEvent(part,target.selectionsParts, $event)">
+        </sql-part-editor>
+      </div>
+    
+    <div class="gf-form">
+      <metric-segment part="part" 
+        dropdown-typeahead2="ctrl.select"
+      segment="ctrl.selectionAdd" get-options="ctrl.getOptions(part, $index)"
+       
+        on-change="ctrl.addSelectionAction(part, $index)"></metric-segment>
+    </div>
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+
+
+  <!--WHERE-->
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">WHERE</label>
+    </div>
+
+    <div class="gf-form" ng-repeat="part in ctrl.target.whereParts">
+      <sql-part-editor class="gf-form-label sql-part" part="part"
+        handle-event="ctrl.handleWherePartEvent(part, $index, $event)">
+      </sql-part-editor>
+    </div>
+
+    <div class="gf-form">
+      <metric-segment segment="ctrl.whereAdd" on-change="ctrl.addWhereAction(part, $index)"></metric-segment>
+    </div>
+
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+
+  <!--AGGREGATE-->
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">AGGREGATE</label>
+    </div>
+
+    <div class="gf-form" ng-repeat="part in ctrl.target.aggParts">
+      <sql-part-editor class="gf-form-label sql-part" part="part"
+        handle-event="ctrl.handleAggPartEvent(ctrl.whereParts, part, $event, $index)">
+      </sql-part-editor>
+    </div>
+
+    <div class="gf-form">
+      <metric-segment segment="ctrl.aggAdd" on-change="ctrl.addAggAction(part, $index)"></metric-segment>
+    </div>
+
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+
+  <!--GROUP BY-->
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">
+        <span>GROUP BY</span>
+      </label>
+      <sql-part-editor ng-repeat="part in ctrl.target.groupParts" part="part" class="gf-form-label sql-part"
+        handle-event="ctrl.handleGroupPartEvent(part, $index, $event)">
+      </sql-part-editor>
+    </div>
+    <div class="gf-form">
+      <metric-segment segment="ctrl.groupAdd" on-change="ctrl.addGroupAction(part, $index)"></metric-segment>
+    </div>
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+
+
+  <!--QUERY-->
+  <div ng-repeat="query in ctrl.target.joinQueryList track by $index" ng-init="joinIndex = $index" class="form-body">
+    <br>
+    <!--type-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">TYPE</label>
+        <div class="gf-form-select-wrapper">
+          <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.joinQueryList[joinIndex].type"
+            ng-options="f.value as f.text for f in ctrl.types"></select>
+        </div>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow">
+        </div>
+        <a class="modal-header-close gf-form-label" ng-click="ctrl.delJoin($index)">
+          <i class="fa fa-remove"></i>
+        </a>
+      </div>
+    </div>
+
+    <!--from-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">FROM</label>
+        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].table" on-change="ctrl.onJoinTableChanged(joinIndex)">
+        </metric-segment>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow">
+
+        </div>
+      </div>
+    </div>
+    <!--select-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">
+          <span>SELECT</span>
+        </label>
+        <sql-part-editor ng-repeat="part in ctrl.target.joinQueryList[joinIndex].selections" ng-init="expIndex = $index"
+          part="part" class="gf-form-label sql-part"
+          handle-event="ctrl.handleJoinSelectionsPartEvent(part, joinIndex, expIndex, $event)">
+        </sql-part-editor>
+      </div>
+      <div class="gf-form">
+        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].selectionAdd"
+          on-change="ctrl.addJoinSelectionAction(joinIndex, expIndex)"></metric-segment>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+    </div>
+
+    <!--where-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">WHERE</label>
+      </div>
+      <div class="gf-form" ng-repeat="part in ctrl.target.joinQueryList[joinIndex].where">
+        <sql-part-editor class="gf-form-label sql-part" part="part"
+          handle-event="ctrl.handleJoinWherePartEvent(part, joinIndex, expIndex, $event)">
+        </sql-part-editor>
+      </div>
+      <div class="gf-form">
+        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].whereAdd"
+          on-change="ctrl.addJoinWhereAction(joinIndex, expIndex)"></metric-segment>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+    </div>
+
+    <!--aggregate-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">AGGREGATE</label>
+      </div>
+      <div class="gf-form" ng-repeat="part in ctrl.target.joinQueryList[joinIndex].aggs">
+        <sql-part-editor class="gf-form-label sql-part" part="part"
+          handle-event="ctrl.handleJoinAggPartEvent(part, joinIndex, expIndex, $event)">
+        </sql-part-editor>
+      </div>
+      <div class="gf-form">
+        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].aggAdd" on-change="ctrl.addJoinAggAction(joinIndex)">
+        </metric-segment>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+    </div>
+
+
+    <!--group by-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">
+          <span>GROUP BY</span>
+        </label>
+        <sql-part-editor ng-repeat="part in ctrl.target.joinQueryList[joinIndex].groups" part="part"
+          class="gf-form-label sql-part"
+          handle-event="ctrl.handleJoinGroupPartEvent(part, joinIndex, expIndex, $event)">
+        </sql-part-editor>
+      </div>
+      <div class="gf-form">
+        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].groupAdd"
+          on-change="ctrl.addJoinGroupAction(part, joinIndex, expIndex)"></metric-segment>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+    </div>
+
+    <!--on-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">ON</label>
+      </div>
+      <div class="gf-form" ng-repeat="part in ctrl.target.joinQueryList[joinIndex].on">
+        <sql-part-editor class="gf-form-label sql-part" part="part"
+          handle-event="ctrl.handleJoinOnPartEvent(part, joinIndex, expIndex, $event)">
+        </sql-part-editor>
+      </div>
+      <div class="gf-form">
+        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].onAdd"
+          on-change="ctrl.addJoinOnAction(part, joinIndex, expIndex)"></metric-segment>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+    </div>
+
+    <!--export-->
+    <div class="gf-form-inline">
+      <div class="gf-form">
+        <label class="gf-form-label query-keyword width-8">EXPORT</label>
+      </div>
+      <div class="gf-form" ng-repeat="part in ctrl.target.joinQueryList[joinIndex].export">
+        <sql-part-editor class="gf-form-label sql-part" part="part"
+          handle-event="ctrl.handleJoinExportPartEvent(part, joinIndex, expIndex, $event)">
+        </sql-part-editor>
+      </div>
+      <div class="gf-form">
+        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].exportAdd"
+          on-change="ctrl.addJoinExportAction(part, joinIndex, expIndex)"></metric-segment>
+      </div>
+      <div class="gf-form gf-form--grow">
+        <div class="gf-form-label gf-form-label--grow"></div>
+      </div>
+    </div>
+
+
+  </div>
+  <br>
+  <button class="btn btn-secondary" gf-form-btn ng-click="ctrl.addJoin()">JOIN</button>
+  <br>
+  <br>
+  <!--SORT-->
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">
+        <span>SORT</span>
+      </label>
+      <sql-part-editor ng-repeat="part in ctrl.target.sortParts" part="part" class="gf-form-label sql-part"
+        handle-event="ctrl.handleSortPartEvent(part, $index, $event)">
+      </sql-part-editor>
+    </div>
+    <div class="gf-form">
+      <metric-segment segment="ctrl.sortAdd" on-change="ctrl.addSortAction(part, $index)"></metric-segment>
+    </div>
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+
+  <!--FIELDS-->
+  <div class="gf-form-inline">
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword width-8">
+        <span>FIELDS</span>
+      </label>
+      <sql-part-editor ng-repeat="part in ctrl.target.fieldParts" part="part" class="gf-form-label sql-part"
+        handle-event="ctrl.handleFieldPartEvent(part, $index, $event)">
+      </sql-part-editor>
+    </div>
+    <div class="gf-form">
+      <metric-segment segment="ctrl.fieldAdd" on-change="ctrl.addFieldAction(part, $index)"></metric-segment>
+    </div>
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form-label gf-form-label--grow"></div>
+    </div>
+  </div>
+
+  <!--LIMIT-->
+  <div class="gf-form-inline">
+    <label class="gf-form-label query-keyword width-8">LIMIT</label>
+    <metric-segment segment="ctrl.target.limitSegment" on-change="ctrl.onLimitChanged()"></metric-segment>
+  </div>
+
+</query-editor-row>
