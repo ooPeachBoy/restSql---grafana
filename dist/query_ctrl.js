@@ -55,6 +55,9 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     _this.target.selectionsParts = _this.target.selectionsParts || [];
     _this.selectionAdd = _this.uiSegmentSrv.newPlusButton();
 
+    _this.selectMenu = [];
+    _this.selectMenu.push(_this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
+
     _this.target.whereParts = _this.target.whereParts || [];
     _this.whereAdd = _this.uiSegmentSrv.newPlusButton();
 
@@ -99,11 +102,6 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       options.push(this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
       console.log("tttttt getOptions", options);
       return Promise.resolve(options);
-    }
-  }, {
-    key: 'addSelectPart',
-    value: function addSelectPart(selectParts, $item, $subItem) {
-      console.log(selectParts, $item, $subItem, '0000');
     }
   }, {
     key: 'removePart',
@@ -190,7 +188,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     key: 'addWhereAction',
     value: function addWhereAction(part, index) {
       var express = _sql_part2.default.create({ type: 'expression', params: ['column', '=', 'value'] });
-      // console.log("addWhereAction", express);
+
       this.target.whereParts.push(express);
 
       this.resetPlusButton(this.whereAdd);
@@ -588,7 +586,6 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
             _this2.target.query.select.filter[key] = parseFloat(part.params[2]);
             console.log(_this2.target.query.select);
           } else if (part.params[2].toLowerCase() === "true") {
-
             _this2.target.query.select.filter[key] = true;
           } else if (part.params[2].toLowerCase() === "false") {
             _this2.target.query.select.filter[key] = false;

@@ -31,8 +31,11 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.target.tableSegment = this.uiSegmentSrv.newSegment({ "value": this.target.table||'select table', "fake": true });
     this.target.table = this.target.table || this.target.tableSegment.value;
     this.target.selectionsParts = this.target.selectionsParts|| [];
-    this.selectionAdd = this.uiSegmentSrv.newPlusButton();    
-
+    this.selectionAdd = this.uiSegmentSrv.newPlusButton();  
+    
+    this.selectMenu = [];
+    this.selectMenu .push(this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
+   
     this.target.whereParts = this.target.whereParts|| [];
     this.whereAdd = this.uiSegmentSrv.newPlusButton();
 
@@ -74,10 +77,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     options.push(this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
     console.log("tttttt getOptions", options);
     return Promise.resolve(options);
-  }
-  addSelectPart(selectParts, $item, $subItem) {
-    console.log(selectParts, $item, $subItem,'0000');
-  }
+  }  
 
   removePart(parts, part) {
     const index = _.indexOf(parts, part);
@@ -155,7 +155,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   addWhereAction(part, index) {
     const express = sqlPart.create({ type: 'expression', params: ['column', '=', 'value'] });
-    // console.log("addWhereAction", express);
+
     this.target.whereParts.push(express);
   
     this.resetPlusButton(this.whereAdd);

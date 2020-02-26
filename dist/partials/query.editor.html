@@ -34,13 +34,16 @@
         </sql-part-editor>
       </div>
     
-    <div class="gf-form">
-      <metric-segment part="part" 
-        
-      segment="ctrl.selectionAdd" get-options="ctrl.getOptions(part, $index)"
-       
-        on-change="ctrl.addSelectionAction(part, $index)"></metric-segment>
-    </div>
+    
+     <div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addSelectionAction(part, $index)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
+      </div>
+
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>
     </div>
@@ -59,9 +62,16 @@
       </sql-part-editor>
     </div>
 
+
+
     <div class="gf-form">
-      <metric-segment segment="ctrl.whereAdd" on-change="ctrl.addWhereAction(part, $index)"></metric-segment>
-    </div>
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addWhereAction(part, $index)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
+      </div>
 
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>
@@ -80,9 +90,15 @@
       </sql-part-editor>
     </div>
 
+
     <div class="gf-form">
-      <metric-segment segment="ctrl.aggAdd" on-change="ctrl.addAggAction(part, $index)"></metric-segment>
-    </div>
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addAggAction(part, $index)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
+      </div>
 
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>
@@ -99,9 +115,17 @@
         handle-event="ctrl.handleGroupPartEvent(part, $index, $event)">
       </sql-part-editor>
     </div>
+   
+
     <div class="gf-form">
-      <metric-segment segment="ctrl.groupAdd" on-change="ctrl.addGroupAction(part, $index)"></metric-segment>
-    </div>
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addGroupAction(part, $index)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
+      </div>
+
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>
     </div>
@@ -153,10 +177,17 @@
           handle-event="ctrl.handleJoinSelectionsPartEvent(part, joinIndex, expIndex, $event)">
         </sql-part-editor>
       </div>
-      <div class="gf-form">
-        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].selectionAdd"
-          on-change="ctrl.addJoinSelectionAction(joinIndex, expIndex)"></metric-segment>
+    
+
+ <div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addJoinSelectionAction(joinIndex, expIndex)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
       </div>
+
       <div class="gf-form gf-form--grow">
         <div class="gf-form-label gf-form-label--grow"></div>
       </div>
@@ -172,10 +203,17 @@
           handle-event="ctrl.handleJoinWherePartEvent(part, joinIndex, expIndex, $event)">
         </sql-part-editor>
       </div>
-      <div class="gf-form">
-        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].whereAdd"
-          on-change="ctrl.addJoinWhereAction(joinIndex, expIndex)"></metric-segment>
+   
+
+ <div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addJoinWhereAction(joinIndex, expIndex)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
       </div>
+
       <div class="gf-form gf-form--grow">
         <div class="gf-form-label gf-form-label--grow"></div>
       </div>
@@ -191,10 +229,17 @@
           handle-event="ctrl.handleJoinAggPartEvent(part, joinIndex, expIndex, $event)">
         </sql-part-editor>
       </div>
-      <div class="gf-form">
-        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].aggAdd" on-change="ctrl.addJoinAggAction(joinIndex)">
-        </metric-segment>
+    
+
+<div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addJoinAggAction(joinIndex)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
       </div>
+
       <div class="gf-form gf-form--grow">
         <div class="gf-form-label gf-form-label--grow"></div>
       </div>
@@ -212,10 +257,17 @@
           handle-event="ctrl.handleJoinGroupPartEvent(part, joinIndex, expIndex, $event)">
         </sql-part-editor>
       </div>
-      <div class="gf-form">
-        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].groupAdd"
-          on-change="ctrl.addJoinGroupAction(part, joinIndex, expIndex)"></metric-segment>
+     
+
+<div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addJoinGroupAction(part, joinIndex, expIndex)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
       </div>
+
       <div class="gf-form gf-form--grow">
         <div class="gf-form-label gf-form-label--grow"></div>
       </div>
@@ -231,10 +283,17 @@
           handle-event="ctrl.handleJoinOnPartEvent(part, joinIndex, expIndex, $event)">
         </sql-part-editor>
       </div>
-      <div class="gf-form">
-        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].onAdd"
-          on-change="ctrl.addJoinOnAction(part, joinIndex, expIndex)"></metric-segment>
+      
+
+<div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addJoinOnAction(part, joinIndex, expIndex)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
       </div>
+
       <div class="gf-form gf-form--grow">
         <div class="gf-form-label gf-form-label--grow"></div>
       </div>
@@ -250,10 +309,17 @@
           handle-event="ctrl.handleJoinExportPartEvent(part, joinIndex, expIndex, $event)">
         </sql-part-editor>
       </div>
-      <div class="gf-form">
-        <metric-segment segment="ctrl.target.joinQueryList[joinIndex].exportAdd"
-          on-change="ctrl.addJoinExportAction(part, joinIndex, expIndex)"></metric-segment>
+   
+
+  <div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addJoinExportAction(part, joinIndex, expIndex)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
       </div>
+
       <div class="gf-form gf-form--grow">
         <div class="gf-form-label gf-form-label--grow"></div>
       </div>
@@ -275,9 +341,17 @@
         handle-event="ctrl.handleSortPartEvent(part, $index, $event)">
       </sql-part-editor>
     </div>
-    <div class="gf-form">
-      <metric-segment segment="ctrl.sortAdd" on-change="ctrl.addSortAction(part, $index)"></metric-segment>
-    </div>
+    
+
+ <div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addSortAction(part, $index)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
+      </div>
+
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>
     </div>
@@ -293,9 +367,17 @@
         handle-event="ctrl.handleFieldPartEvent(part, $index, $event)">
       </sql-part-editor>
     </div>
-    <div class="gf-form">
-      <metric-segment segment="ctrl.fieldAdd" on-change="ctrl.addFieldAction(part, $index)"></metric-segment>
-    </div>
+    
+
+ <div class="gf-form">
+        <label class="dropdown"
+                dropdown-typeahead2="ctrl.selectMenu"
+                dropdown-typeahead-on-select="ctrl.addFieldAction(part, $index)"
+                button-template-class="gf-form-label query-part"
+                >
+        </label>
+      </div>
+
     <div class="gf-form gf-form--grow">
       <div class="gf-form-label gf-form-label--grow"></div>
     </div>
