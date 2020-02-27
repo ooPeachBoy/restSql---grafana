@@ -34,7 +34,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (_QueryCtrl) {
   _inherits(GenericDatasourceQueryCtrl, _QueryCtrl);
 
-  function GenericDatasourceQueryCtrl($scope, $injector, uiSegmentSrv) {
+  function GenericDatasourceQueryCtrl($scope, $injector, uiSegmentSrv, $q) {
     _classCallCheck(this, GenericDatasourceQueryCtrl);
 
     // console.log("GenericDatasourceQueryCtrl", uiSegmentSrv);
@@ -42,9 +42,12 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
 
     _this.scope = $scope;
     _this.uiSegmentSrv = uiSegmentSrv;
+    _this.$q = $q;
 
     _this.formats = [{ text: 'Time series', value: 'grafana.timeserie' }, { text: 'Table', value: 'grafana.table' }];
     _this.types = [{ text: 'Left Join', value: 'left_join' }, { text: 'Inner Join', value: 'inner_join' }, { text: 'Full Join', value: 'full_join' }];
+
+    console.log(_this.target, 11111111111111111111);
 
     // this.target.tableSegment = null;
     _this.target.target = _this.target.target || 'targettest';
@@ -150,7 +153,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     value: function handleSelectionsPartEvent(part, index, event) {
       console.log("tttttt handleSelectionsPartEvent", event, index, part, '---');
       if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.removePart(this.target.selectionsParts, part);
         // this.target.selectionsParts.splice(index, 1, null);
@@ -175,7 +178,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     value: function handleJoinSelectionsPartEvent(part, joinIndex, expIndex, event) {
       console.log("handleJoinSelectionsPartEvent", joinIndex, expIndex);
       if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         // this.removePart(this.target.joinQueryList[joinIndex].selections, part);
         this.target.joinQueryList[joinIndex].selections.splice(expIndex, 1);
@@ -202,7 +205,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var operators = ['=', '<', '<=', '>', '>=', 'CONTAINS', 'STARTSWITH', 'ENDSWITH', 'RANGE', 'IN'];
         return Promise.resolve(this.uiSegmentSrv.newOperators(operators));
       } else if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.whereParts.splice(index, 1);
         this.updateRestSql();
@@ -229,7 +232,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var operators = ['=', '<', '<=', '>', '>=', 'CONTAINS', 'STARTSWITH', 'ENDSWITH', 'RANGE', 'IN'];
         return Promise.resolve(this.uiSegmentSrv.newOperators(operators));
       } else if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.joinQueryList[joinIndex].where.splice(expIndex, 1);
       } else if (event.name === "part-param-changed") {
@@ -255,7 +258,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var operators = event.param.options;
         return Promise.resolve(this.uiSegmentSrv.newOperators(operators));
       } else if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.aggParts.splice(index, 1);
         this.updateRestSql();
@@ -282,7 +285,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var operators = event.param.options;
         return Promise.resolve(this.uiSegmentSrv.newOperators(operators));
       } else if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.joinQueryList[joinIndex].aggs.splice(expIndex, 1);
         this.updateRestSql();
@@ -305,7 +308,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     value: function handleGroupPartEvent(part, index, event) {
       console.log("handleGroupsPartEvent");
       if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.groupParts.splice(index, 1);
         this.updateRestSql();
@@ -326,7 +329,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     value: function handleJoinGroupPartEvent(part, joinIndex, expIndex, event) {
       console.log("handleJoinGroupPartEvent");
       if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.joinQueryList[joinIndex].groups.splice(expIndex, 1);
         this.updateRestSql();
@@ -351,7 +354,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var operators = ['='];
         return Promise.resolve(this.uiSegmentSrv.newOperators(operators));
       } else if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.joinQueryList[joinIndex].on.splice(expIndex, 1);
       } else if (event.name === "get-param-options" && event.param.name === "field1") {
@@ -387,7 +390,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     value: function handleJoinExportPartEvent(part, joinIndex, expIndex, event) {
       console.log("handleJoinExportPartEvent", event);
       if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         this.target.joinQueryList[joinIndex].export.splice(expIndex, 1);
         this.updateRestSql();
@@ -413,7 +416,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     value: function handleSortPartEvent(part, index, event) {
       console.log("handleSortPartEvent", event);
       if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
         // console.log(this.target.sortParts,'====');
 
@@ -441,7 +444,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     value: function handleFieldPartEvent(part, index, event) {
       console.log("handleFieldPartEvent", event);
       if (event.name === "get-part-actions") {
-        return Promise.resolve([{ text: 'Remove', value: 'remove' }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
 
         this.target.fieldParts.splice(index, 1);
