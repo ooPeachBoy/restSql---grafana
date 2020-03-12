@@ -63,8 +63,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       var formatStr = '&datatype=' + options.targets[0].type;
 
       return this.doRequest({
-        url: encodeURI(this.url + ('/query/' + queryStr + formatStr)),
-        // url: this.url + '/query/',
+        url: encodeURI(this.url + ('/query/' + queryStr + formatStr)).replace(/\+/g, '%2B'),
         method: 'GET'
       });
     }

@@ -23,6 +23,8 @@ var _sql_part = require('./sql_part');
 
 var _sql_part2 = _interopRequireDefault(_sql_part);
 
+var _data = require('@grafana/data');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -37,12 +39,14 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   function GenericDatasourceQueryCtrl($scope, $injector, uiSegmentSrv, $q) {
     _classCallCheck(this, GenericDatasourceQueryCtrl);
 
-    // console.log("GenericDatasourceQueryCtrl", uiSegmentSrv);
     var _this = _possibleConstructorReturn(this, (GenericDatasourceQueryCtrl.__proto__ || Object.getPrototypeOf(GenericDatasourceQueryCtrl)).call(this, $scope, $injector));
 
     _this.scope = $scope;
     _this.uiSegmentSrv = uiSegmentSrv;
     _this.$q = $q;
+    _this.lastQueryError = null;
+    _this.panelCtrl.events.on(_data.PanelEvents.dataReceived, _this.onDataReceived.bind(_this), $scope);
+    _this.panelCtrl.events.on(_data.PanelEvents.dataError, _this.onDataError.bind(_this), $scope);
 
     _this.formats = [{ text: 'Time series', value: 'grafana.timeserie' }, { text: 'Table', value: 'grafana.table' }];
     _this.types = [{ text: 'Left Join', value: 'left_join' }, { text: 'Inner Join', value: 'inner_join' }, { text: 'Full Join', value: 'full_join' }];
@@ -50,32 +54,116 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     console.log(_this.target, 11111111111111111111);
 
     // this.target.tableSegment = null;
-    _this.target.target = _this.target.target || 'targettest';
+    _this.target.target = _this.target.target || '';
     _this.target.type = _this.target.type;
 
     _this.target.tableSegment = _this.uiSegmentSrv.newSegment({ "value": _this.target.table || 'select table', "fake": true });
     _this.target.table = _this.target.table || _this.target.tableSegment.value;
-    _this.target.selectionsParts = _this.target.selectionsParts || [];
+
+    if (_this.target.selectionsParts) {
+      var selectionsList = [];
+      _this.target.selectionsParts.forEach(function (element) {
+        if (element.__proto__.toLocaleString) {
+          var express = _sql_part2.default.create(element.part);
+          selectionsList.push(express);
+        }
+        _this.target.selectionsParts = selectionsList;
+      });
+    } else {
+      _this.target.selectionsParts = [];
+    }
+
     _this.selectionAdd = _this.uiSegmentSrv.newPlusButton();
 
     _this.selectMenu = [];
     _this.selectMenu.push(_this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
 
-    _this.target.whereParts = _this.target.whereParts || [];
+    if (_this.target.whereParts) {
+      var whereList = [];
+      _this.target.whereParts.forEach(function (element) {
+        if (element.__proto__.toLocaleString) {
+          var express = _sql_part2.default.create(element.part);
+          whereList.push(express);
+        }
+        _this.target.whereParts = whereList;
+      });
+    } else {
+      _this.target.whereParts = [];
+    }
+
     _this.whereAdd = _this.uiSegmentSrv.newPlusButton();
 
     _this.target.aggParts = _this.target.aggParts || [];
+    if (_this.target.aggParts) {
+      var aggList = [];
+      _this.target.aggParts.forEach(function (element) {
+        if (element.__proto__.toLocaleString) {
+          var express = _sql_part2.default.create(element.part);
+          aggList.push(express);
+        }
+        _this.target.aggParts = aggList;
+      });
+    } else {
+      _this.target.aggParts = [];
+    }
     _this.aggAdd = _this.uiSegmentSrv.newPlusButton();
 
-    _this.target.groupParts = _this.target.groupParts || [];
+    if (_this.target.groupParts) {
+      var groupList = [];
+      _this.target.groupParts.forEach(function (element) {
+        if (element.__proto__.toLocaleString) {
+          var express = _sql_part2.default.create(element.part);
+          groupList.push(express);
+        }
+        _this.target.groupParts = groupList;
+      });
+    } else {
+      _this.target.groupParts = [];
+    }
+
     _this.groupAdd = _this.uiSegmentSrv.newPlusButton();
 
-    _this.target.joinQueryList = _this.target.joinQueryList || [];
+    if (_this.target.joinQueryList) {
+      var joinQueryList = [];
+      _this.target.joinQueryList.forEach(function (element) {
+        if (element.__proto__.toLocaleString) {
+          var express = _sql_part2.default.create(element.part);
+          joinQueryList.push(express);
+        }
+        _this.target.joinQueryList = joinQueryList;
+      });
+    } else {
+      _this.target.joinQueryList = [];
+    }
 
-    _this.target.sortParts = _this.target.sortParts || [];
+    if (_this.target.sortParts) {
+      var sortList = [];
+      _this.target.sortParts.forEach(function (element) {
+        if (element.__proto__.toLocaleString) {
+          var express = _sql_part2.default.create(element.part);
+          sortList.push(express);
+        }
+        _this.target.sortParts = sortList;
+      });
+    } else {
+      _this.target.sortParts = [];
+    }
+
     _this.sortAdd = _this.uiSegmentSrv.newPlusButton();
 
-    _this.target.fieldParts = _this.target.fieldParts || [];
+    if (_this.target.fieldParts) {
+      var fieldList = [];
+      _this.target.fieldParts.forEach(function (element) {
+        if (element.__proto__.toLocaleString) {
+          var express = _sql_part2.default.create(element.part);
+          fieldList.push(express);
+        }
+        _this.target.fieldParts = fieldList;
+      });
+    } else {
+      _this.target.fieldParts = [];
+    }
+
     _this.fieldAdd = _this.uiSegmentSrv.newPlusButton();
 
     _this.target.limitSegment = _this.uiSegmentSrv.newSegment({ "value": _this.target.limit || '1000', "fake": true });
@@ -99,6 +187,19 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }
 
   _createClass(GenericDatasourceQueryCtrl, [{
+    key: 'onDataReceived',
+    value: function onDataReceived(dataList) {
+      console.log(dataList);
+      this.lastQueryError = null;
+    }
+  }, {
+    key: 'onDataError',
+    value: function onDataError(err) {
+      if (this.target.target) {
+        this.lastQueryError = err.message;
+      }
+    }
+  }, {
     key: 'getOptions',
     value: function getOptions() {
       var options = [];
@@ -152,6 +253,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     key: 'handleSelectionsPartEvent',
     value: function handleSelectionsPartEvent(part, index, event) {
       console.log("tttttt handleSelectionsPartEvent", event, index, part, '---');
+      // if (event.name = "get-param-options")
       if (event.name === "get-part-actions") {
         return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
@@ -252,7 +354,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }, {
     key: 'handleAggPartEvent',
     value: function handleAggPartEvent(part, index, event) {
-      console.log("handleAggPartEvent");
+      console.log("handleAggPartEvent", event, part, index);
       if (event.name === "get-param-options" && event.param.name === "agg") {
         // 暂时只支持展开操作符列表
         var operators = event.param.options;
@@ -435,14 +537,14 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     key: 'addFieldAction',
     value: function addFieldAction(index) {
       var express = _sql_part2.default.create({ type: 'alias', params: ['fields', 'alias'] });
-      console.log("addSortAction", index);
+      console.log("addSortAction", index, express);
       this.target.fieldParts.push(express);
       this.resetPlusButton(this.fieldAdd);
     }
   }, {
     key: 'handleFieldPartEvent',
     value: function handleFieldPartEvent(part, index, event) {
-      console.log("handleFieldPartEvent", event);
+      // console.log("handleFieldPartEvent", event);
       if (event.name === "get-part-actions") {
         return this.$q.when([{ text: 'Remove', value: 'remove' }]);
       } else if (event.name === "action" && event.action.value === "remove") {
@@ -497,7 +599,6 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       // 获取select的字段，aggregate的字段，以及所有join表中的export字段
 
       var mainFields = this.getExportOptions(this.target.selectionsParts, this.target.aggParts);
-      console.log(this.target.selectionsParts, '--------');
       var exportFields = [];
       this.target.joinQueryList.forEach(function (query) {
         console.log("fafadsf1", query.export);
@@ -701,7 +802,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
 
       //update fields
       this.target.fieldParts.forEach(function (part) {
-        // console.log("fieldParts", part);
+        console.log("fieldParts", part.params[0], '5555555555');
         _this2.target.query.fields.push(part.params.join("@"));
       });
 

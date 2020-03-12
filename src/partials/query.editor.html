@@ -111,10 +111,14 @@
       <label class="gf-form-label query-keyword width-8">
         <span>GROUP BY</span>
       </label>
-      <sql-part-editor ng-repeat="part in ctrl.target.groupParts" part="part" class="gf-form-label sql-part"
+    </div>
+    <div class="gf-form" ng-repeat="part in ctrl.target.groupParts">
+
+      <sql-part-editor  part="part" class="gf-form-label sql-part"
         handle-event="ctrl.handleGroupPartEvent(part, $index, $event)">
       </sql-part-editor>
     </div>
+
    
 
     <div class="gf-form">
@@ -337,10 +341,14 @@
       <label class="gf-form-label query-keyword width-8">
         <span>SORT</span>
       </label>
-      <sql-part-editor ng-repeat="part in ctrl.target.sortParts" part="part" class="gf-form-label sql-part"
+    </div>
+    <div class="gf-form" ng-repeat="part in ctrl.target.sortParts" >
+
+      <sql-part-editor  part="part" class="gf-form-label sql-part"
         handle-event="ctrl.handleSortPartEvent(part, $index, $event)">
       </sql-part-editor>
     </div>
+  
     
 
  <div class="gf-form">
@@ -363,10 +371,14 @@
       <label class="gf-form-label query-keyword width-8">
         <span>FIELDS</span>
       </label>
-      <sql-part-editor ng-repeat="part in ctrl.target.fieldParts" part="part" class="gf-form-label sql-part"
-        handle-event="ctrl.handleFieldPartEvent(part, $index, $event)">
-      </sql-part-editor>
     </div>
+      <div class="gf-form" ng-repeat="part in ctrl.target.fieldParts"  >
+
+        <sql-part-editor part="part" class="gf-form-label sql-part"
+          handle-event="ctrl.handleFieldPartEvent(part, $index, $event)">
+        </sql-part-editor>
+      </div>
+   
     
 
  <div class="gf-form">
@@ -388,5 +400,7 @@
     <label class="gf-form-label query-keyword width-8">LIMIT</label>
     <metric-segment segment="ctrl.target.limitSegment" on-change="ctrl.onLimitChanged()"></metric-segment>
   </div>
-
+ <div class="gf-form" ng-show="ctrl.lastQueryError">
+    <pre class="gf-form-pre alert alert-error">{{ctrl.lastQueryError}}</pre>
+  </div>
 </query-editor-row>
