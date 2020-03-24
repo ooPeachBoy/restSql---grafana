@@ -96,6 +96,21 @@ export class GenericDatasource {
       method: 'POST',
     }).then(this.mapToTextValue);
   }
+// 下拉选项
+  metricFindOption(tableName,parth) {
+    const data = {
+      tableName
+    }
+    return this.backendSrv
+      .datasourceRequest({
+        // url: '/api/tsdb/query',
+        url:'https://easy-mock.com/mock/5e7820fa4ecfa92432bfd6f1/'+parth,
+        method: 'POST',
+        data: data,
+      })
+      .then((result) => {return result});
+  }
+
 
   mapToTextValue(result) {
     return _.map(result.data, (d, i) => {

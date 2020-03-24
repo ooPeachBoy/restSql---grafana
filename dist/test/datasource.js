@@ -117,6 +117,23 @@ var GenericDatasource = exports.GenericDatasource = function () {
         method: 'POST'
       }).then(this.mapToTextValue);
     }
+    // 下拉选项
+
+  }, {
+    key: 'metricFindOption',
+    value: function metricFindOption(tableName, parth) {
+      var data = {
+        tableName: tableName
+      };
+      return this.backendSrv.datasourceRequest({
+        // url: '/api/tsdb/query',
+        url: 'https://easy-mock.com/mock/5e7820fa4ecfa92432bfd6f1/' + parth,
+        method: 'POST',
+        data: data
+      }).then(function (result) {
+        return result;
+      });
+    }
   }, {
     key: 'mapToTextValue',
     value: function mapToTextValue(result) {

@@ -48,14 +48,16 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     _this.panelCtrl.events.on(_data.PanelEvents.dataReceived, _this.onDataReceived.bind(_this), $scope);
     _this.panelCtrl.events.on(_data.PanelEvents.dataError, _this.onDataError.bind(_this), $scope);
 
+    _this.target.tableSelect = _this.target.tableSelect || [];
+
     _this.formats = [{ text: 'Time series', value: 'grafana.timeserie' }, { text: 'Table', value: 'grafana.table' }];
     _this.types = [{ text: 'Left Join', value: 'left_join' }, { text: 'Inner Join', value: 'inner_join' }, { text: 'Full Join', value: 'full_join' }];
 
-    console.log(_this.target, 11111111111111111111);
+    console.log(_this, 11111111111111111111);
 
     // this.target.tableSegment = null;
     _this.target.target = _this.target.target || '';
-    _this.target.type = _this.target.type;
+    _this.target.type = _this.target.type || 'grafana.timeserie';
 
     _this.target.tableSegment = _this.uiSegmentSrv.newSegment({ "value": _this.target.table || 'select table', "fake": true });
     _this.target.table = _this.target.table || _this.target.tableSegment.value;
@@ -187,6 +189,34 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }
 
   _createClass(GenericDatasourceQueryCtrl, [{
+    key: 'getTableSegments',
+    value: function getTableSegments() {
+      var _this2 = this;
+
+      var tableName = this.target.table;
+      var parth = 'getList';
+      this.datasource.metricFindOption(tableName, parth).then(function (result) {
+        if (result.status === 200) {
+          _this2.target.tableSelect = result.data.data.tables[0].rows;
+        }
+      });
+    }
+  }, {
+    key: 'transformToSegments',
+    value: function transformToSegments() {
+      var _this3 = this;
+
+      return function (result) {
+        var segments = _lodash2.default.map(results, function (segment) {
+          return _this3.uiSegmentSrv.newSegment({
+            value: segment.text,
+            expandable: segment.expandable
+          });
+        });
+        return segments;
+      };
+    }
+  }, {
     key: 'onDataReceived',
     value: function onDataReceived(dataList) {
       console.log(dataList);
@@ -265,6 +295,8 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         console.log(this.target.selectionsParts);
         this.target.selectionsParts.forEach(function (item, i) {});
         this.updateRestSql();
+      } else if (event.name === "get-param-options") {
+        return Promise.resolve(this.uiSegmentSrv.newOperators(this.target.tableSelect));
       }
     }
   }, {
@@ -633,9 +665,10 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }, {
     key: 'updateRestSql',
     value: function updateRestSql() {
-      var _this2 = this;
+      var _this4 = this;
 
       // 将输入的内容更新到target中去
+
 
       this.target.query = {
         // restSql协议结构定义
@@ -658,7 +691,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
 
       // update select fields
       this.target.selectionsParts.forEach(function (part) {
-        _this2.target.query.select.fields.push(part.params[0]);
+        _this4.target.query.select.fields.push(part.params[0]);
       });
 
       // update where
@@ -680,19 +713,19 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var key = '' + part.params[0] + suffix;
         if (part.params[1] === "IN") {
           console.log("whereTest", part.params[2], _typeof(part.params[2]));
-          _this2.target.query.select.filter[key] = JSON.parse(part.params[2]);
+          _this4.target.query.select.filter[key] = JSON.parse(part.params[2]);
         } else {
           if (part.params[2].startsWith("\"") && part.params[2].endsWith("\"") || part.params[2].startsWith("\'") && part.params[2].endsWith("\'")) {
             var tmpStr = part.params[2];
-            _this2.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
+            _this4.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
             // console.log(this.target.query.select);
           } else if (!isNaN(parseFloat(part.params[2]))) {
-            _this2.target.query.select.filter[key] = parseFloat(part.params[2]);
-            console.log(_this2.target.query.select);
+            _this4.target.query.select.filter[key] = parseFloat(part.params[2]);
+            console.log(_this4.target.query.select);
           } else if (part.params[2].toLowerCase() === "true") {
-            _this2.target.query.select.filter[key] = true;
+            _this4.target.query.select.filter[key] = true;
           } else if (part.params[2].toLowerCase() === "false") {
-            _this2.target.query.select.filter[key] = false;
+            _this4.target.query.select.filter[key] = false;
           } else {
             return Promise.reject({
               message: 'tetete'
@@ -710,13 +743,13 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
             aggFunc = _part$params2[0],
             field = _part$params2[1];
 
-        _this2.target.query.select.aggregation.push([field, aggFunc].join("__"));
+        _this4.target.query.select.aggregation.push([field, aggFunc].join("__"));
       });
 
       // update group by
       this.target.groupParts.forEach(function (part) {
         console.log("groupParts", part);
-        _this2.target.query.select.group_by.push(part.params[0]);
+        _this4.target.query.select.group_by.push(part.params[0]);
       });
 
       // update join
@@ -790,20 +823,20 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
           console.log("joinQuery");
           joinQuery.export.push(part.params.join("@"));
         });
-        _this2.target.query.join.push(joinQuery);
+        _this4.target.query.join.push(joinQuery);
       });
 
       // update sort
       this.target.sortParts.forEach(function (part) {
         console.log("sortParts", part);
         var sortExp = part.params[0] === "asc" ? part.params[1] : '-' + part.params[1];
-        _this2.target.query.sort.push(sortExp);
+        _this4.target.query.sort.push(sortExp);
       });
 
       //update fields
       this.target.fieldParts.forEach(function (part) {
         console.log("fieldParts", part.params[0], '5555555555');
-        _this2.target.query.fields.push(part.params.join("@"));
+        _this4.target.query.fields.push(part.params.join("@"));
       });
 
       // update limit

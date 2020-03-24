@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { QueryCtrl } from 'app/plugins/sdk';
 import sqlPart from './sql_part';
 import { PanelEvents } from '@grafana/data';
+import { MetricsPanelCtrl } from 'app/plugins/sdk';
 export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   constructor($scope, $injector, uiSegmentSrv, $q) {
@@ -15,9 +16,12 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.panelCtrl.events.on(PanelEvents.dataReceived, this.onDataReceived.bind(this), $scope);
     this.panelCtrl.events.on(PanelEvents.dataError, this.onDataError.bind(this), $scope);
 
+    this.target.tableSelect = this.target.tableSelect || [];
+
     this.formats = [
       { text: 'Time series', value: 'grafana.timeserie' },
       { text: 'Table', value: 'grafana.table' },
+      
     ];
     this.types = [
       { text: 'Left Join', value: 'left_join' },
@@ -25,28 +29,30 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       { text: 'Full Join', value: 'full_join' }
     ];
 
-    console.log(this.target, 11111111111111111111);
+    console.log(this, '11111111111111111111');
 
     // this.target.tableSegment = null;
     this.target.target = this.target.target || '';
-    this.target.type = this.target.type;
+    this.target.type = this.target.type ||   'grafana.timeserie';
 
     this.target.tableSegment = this.uiSegmentSrv.newSegment({ "value": this.target.table || 'select table', "fake": true });
     this.target.table = this.target.table || this.target.tableSegment.value;
 
+
+
     if (this.target.selectionsParts) {
-      let selectionsList=[]
+      let selectionsList = []
       this.target.selectionsParts.forEach(element => {
         if (element.__proto__.toLocaleString) {
           const express = sqlPart.create(element.part)
           selectionsList.push(express);
         }
-        this.target.selectionsParts=  selectionsList
+        this.target.selectionsParts = selectionsList
       });
     } else {
-      this.target.selectionsParts =  [];
+      this.target.selectionsParts = [];
     }
-  
+
     this.selectionAdd = this.uiSegmentSrv.newPlusButton();
 
     this.selectMenu = [];
@@ -163,6 +169,28 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     };
 
   }
+  getTableSegments() {
+    let tableName = this.target.table;
+    let parth = 'getList';
+    this.datasource.metricFindOption(tableName, parth).then(result => {
+      if (result.status === 200) {
+        this.target.tableSelect = result.data.data.tables[0].rows;
+      }
+    })
+
+  }
+  transformToSegments() {
+    return (result) => {
+      const segments = _.map(results, segment => {
+        return this.uiSegmentSrv.newSegment({
+          value: segment.text,
+          expandable: segment.expandable,
+        });
+      });
+      return segments;
+    }
+  }
+
   onDataReceived(dataList) {
     console.log(dataList);
     this.lastQueryError = null
@@ -170,8 +198,8 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   onDataError(err) {
     if (this.target.target) {
       this.lastQueryError = err.message
-    } 
-   
+    }
+
   }
 
   getOptions() {
@@ -234,6 +262,8 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       this.target.selectionsParts.forEach((item, i) => {
       })
       this.updateRestSql();
+    } else if (event.name === "get-param-options") {
+      return Promise.resolve(this.uiSegmentSrv.newOperators(this.target.tableSelect));
     }
   }
 
@@ -572,6 +602,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   updateRestSql() {
     // 将输入的内容更新到target中去
 
+
     this.target.query = {
       // restSql协议结构定义
       "select": {
@@ -734,7 +765,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
     //update fields
     this.target.fieldParts.forEach((part) => {
-      console.log("fieldParts", part.params[0],'5555555555');
+      console.log("fieldParts", part.params[0], '5555555555');
       this.target.query.fields.push(part.params.join("@"));
     });
 
