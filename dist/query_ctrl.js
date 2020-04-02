@@ -219,8 +219,16 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }, {
     key: 'onTableChanged',
     value: function onTableChanged() {
-      console.log("tableChanged", this);
+      var _this5 = this;
+
+      console.log("tableChanged", this, this.target.tableSegment.value);
       this.target.table = this.target.tableSegment.value;
+      var parth = 'getList';
+      this.datasource.metricFindOption(this.target.table, parth).then(function (result) {
+        if (result.status === 200) {
+          _this5.target.tableSelect = result.data.data.tables[0].rows;
+        }
+      });
       this.updateRestSql();
     }
   }, {
@@ -650,7 +658,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }, {
     key: 'updateRestSql',
     value: function updateRestSql() {
-      var _this5 = this;
+      var _this6 = this;
 
       // 将输入的内容更新到target中去
 
@@ -678,7 +686,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
 
       // update select fields
       this.target.selectionsParts.forEach(function (part) {
-        _this5.target.query.select.fields.push(part.params[0]);
+        _this6.target.query.select.fields.push(part.params[0]);
       });
 
       // update where
@@ -700,19 +708,19 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var key = '' + part.params[0] + suffix;
         if (part.params[1] === "IN") {
           console.log("whereTest", part.params[2], _typeof(part.params[2]));
-          _this5.target.query.select.filter[key] = JSON.parse(part.params[2]);
+          _this6.target.query.select.filter[key] = JSON.parse(part.params[2]);
         } else {
           if (part.params[2].startsWith("\"") && part.params[2].endsWith("\"") || part.params[2].startsWith("\'") && part.params[2].endsWith("\'")) {
             var tmpStr = part.params[2];
-            _this5.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
+            _this6.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
             // console.log(this.target.query.select);
           } else if (!isNaN(parseFloat(part.params[2]))) {
-            _this5.target.query.select.filter[key] = parseFloat(part.params[2]);
-            console.log(_this5.target.query.select);
+            _this6.target.query.select.filter[key] = parseFloat(part.params[2]);
+            console.log(_this6.target.query.select);
           } else if (part.params[2].toLowerCase() === "true") {
-            _this5.target.query.select.filter[key] = true;
+            _this6.target.query.select.filter[key] = true;
           } else if (part.params[2].toLowerCase() === "false") {
-            _this5.target.query.select.filter[key] = false;
+            _this6.target.query.select.filter[key] = false;
           } else {
             return Promise.reject({
               message: 'tetete'
@@ -730,13 +738,13 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
             aggFunc = _part$params2[0],
             field = _part$params2[1];
 
-        _this5.target.query.select.aggregation.push([field, aggFunc].join("__"));
+        _this6.target.query.select.aggregation.push([field, aggFunc].join("__"));
       });
 
       // update group by
       this.target.groupParts.forEach(function (part) {
         console.log("groupParts", part);
-        _this5.target.query.select.group_by.push(part.params[0]);
+        _this6.target.query.select.group_by.push(part.params[0]);
       });
 
       // update join
@@ -812,20 +820,20 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         });
         // update joinLimit
         joinQuery.limit = parseInt(query.limit.value);
-        _this5.target.query.join.push(joinQuery);
+        _this6.target.query.join.push(joinQuery);
       });
 
       // update sort
       this.target.sortParts.forEach(function (part) {
         console.log("sortParts", part);
         var sortExp = part.params[0] === "asc" ? part.params[1] : '-' + part.params[1];
-        _this5.target.query.sort.push(sortExp);
+        _this6.target.query.sort.push(sortExp);
       });
 
       //update fields
       this.target.fieldParts.forEach(function (part) {
         console.log("fieldParts", part.params[0], '5555555555');
-        _this5.target.query.fields.push(part.params.join("@"));
+        _this6.target.query.fields.push(part.params.join("@"));
       });
 
       // update limit

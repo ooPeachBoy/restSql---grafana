@@ -169,8 +169,14 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   onTableChanged() {
-    console.log("tableChanged", this);
+    console.log("tableChanged", this, this.target.tableSegment.value);
     this.target.table = this.target.tableSegment.value;
+    let parth = 'getList';
+    this.datasource.metricFindOption(this.target.table, parth).then(result => {
+      if (result.status === 200) {
+        this.target.tableSelect = result.data.data.tables[0].rows;
+      }
+    })
     this.updateRestSql();
   }
 
