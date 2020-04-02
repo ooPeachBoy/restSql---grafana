@@ -48,12 +48,15 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     _this.panelCtrl.events.on(_data.PanelEvents.dataReceived, _this.onDataReceived.bind(_this), $scope);
     _this.panelCtrl.events.on(_data.PanelEvents.dataError, _this.onDataError.bind(_this), $scope);
 
+    _this.panelCtrl.events.on(_data.PanelEvents.render, _this.onDataRefresh.bind(_this), $scope);
+    console.log(_this, '11111111111111111111');
+    _this.joinQueryList = _this.joinQueryList || [];
+    _this.updateProjection();
+
     _this.target.tableSelect = _this.target.tableSelect || [];
 
     _this.formats = [{ text: 'Time series', value: 'grafana.timeserie' }, { text: 'Table', value: 'grafana.table' }];
     _this.types = [{ text: 'Left Join', value: 'left_join' }, { text: 'Inner Join', value: 'inner_join' }, { text: 'Full Join', value: 'full_join' }];
-
-    console.log(_this, 11111111111111111111);
 
     // this.target.tableSegment = null;
     _this.target.target = _this.target.target || '';
@@ -62,114 +65,29 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
     _this.target.tableSegment = _this.uiSegmentSrv.newSegment({ "value": _this.target.table || 'select table', "fake": true });
     _this.target.table = _this.target.table || _this.target.tableSegment.value;
 
-    if (_this.target.selectionsParts) {
-      var selectionsList = [];
-      _this.target.selectionsParts.forEach(function (element) {
-        if (element.__proto__.toLocaleString) {
-          var express = _sql_part2.default.create(element.part);
-          selectionsList.push(express);
-        }
-        _this.target.selectionsParts = selectionsList;
-      });
-    } else {
-      _this.target.selectionsParts = [];
-    }
-
+    _this.target.selectionsParts = _this.target.selectionsParts || [];
     _this.selectionAdd = _this.uiSegmentSrv.newPlusButton();
 
     _this.selectMenu = [];
     _this.selectMenu.push(_this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
-
-    if (_this.target.whereParts) {
-      var whereList = [];
-      _this.target.whereParts.forEach(function (element) {
-        if (element.__proto__.toLocaleString) {
-          var express = _sql_part2.default.create(element.part);
-          whereList.push(express);
-        }
-        _this.target.whereParts = whereList;
-      });
-    } else {
-      _this.target.whereParts = [];
-    }
-
+    // this.selectionsParts = this.selectionsParts || [];
+    _this.target.whereParts = _this.target.whereParts || [];
     _this.whereAdd = _this.uiSegmentSrv.newPlusButton();
-
     _this.target.aggParts = _this.target.aggParts || [];
-    if (_this.target.aggParts) {
-      var aggList = [];
-      _this.target.aggParts.forEach(function (element) {
-        if (element.__proto__.toLocaleString) {
-          var express = _sql_part2.default.create(element.part);
-          aggList.push(express);
-        }
-        _this.target.aggParts = aggList;
-      });
-    } else {
-      _this.target.aggParts = [];
-    }
     _this.aggAdd = _this.uiSegmentSrv.newPlusButton();
-
-    if (_this.target.groupParts) {
-      var groupList = [];
-      _this.target.groupParts.forEach(function (element) {
-        if (element.__proto__.toLocaleString) {
-          var express = _sql_part2.default.create(element.part);
-          groupList.push(express);
-        }
-        _this.target.groupParts = groupList;
-      });
-    } else {
-      _this.target.groupParts = [];
-    }
-
+    _this.target.groupParts = _this.target.groupParts || [];
     _this.groupAdd = _this.uiSegmentSrv.newPlusButton();
+    _this.target.joinQueryList = _this.target.joinQueryList || [];
 
-    if (_this.target.joinQueryList) {
-      var joinQueryList = [];
-      _this.target.joinQueryList.forEach(function (element) {
-        if (element.__proto__.toLocaleString) {
-          var express = _sql_part2.default.create(element.part);
-          joinQueryList.push(express);
-        }
-        _this.target.joinQueryList = joinQueryList;
-      });
-    } else {
-      _this.target.joinQueryList = [];
-    }
-
-    if (_this.target.sortParts) {
-      var sortList = [];
-      _this.target.sortParts.forEach(function (element) {
-        if (element.__proto__.toLocaleString) {
-          var express = _sql_part2.default.create(element.part);
-          sortList.push(express);
-        }
-        _this.target.sortParts = sortList;
-      });
-    } else {
-      _this.target.sortParts = [];
-    }
-
+    _this.target.sortParts = _this.target.sortParts || [];
     _this.sortAdd = _this.uiSegmentSrv.newPlusButton();
-
-    if (_this.target.fieldParts) {
-      var fieldList = [];
-      _this.target.fieldParts.forEach(function (element) {
-        if (element.__proto__.toLocaleString) {
-          var express = _sql_part2.default.create(element.part);
-          fieldList.push(express);
-        }
-        _this.target.fieldParts = fieldList;
-      });
-    } else {
-      _this.target.fieldParts = [];
-    }
-
+    _this.target.fieldParts = _this.target.fieldParts || [];
     _this.fieldAdd = _this.uiSegmentSrv.newPlusButton();
 
     _this.target.limitSegment = _this.uiSegmentSrv.newSegment({ "value": _this.target.limit || '1000', "fake": true });
     _this.target.limit = _this.target.limitSegment.value || '1000';
+    _this.target.queryLimitSegment = _this.uiSegmentSrv.newSegment({ "value": _this.target.queryLimit || '1000', "fake": true });
+    _this.target.queryLimit = _this.target.queryLimitSegment.value || '1000';
     _this.target.query = {
       // restSql协议结构定义
       "select": {
@@ -189,26 +107,75 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }
 
   _createClass(GenericDatasourceQueryCtrl, [{
+    key: 'updateProjection',
+    value: function updateProjection() {
+      var _this2 = this;
+
+      if (this.target.target) {
+        var _loop = function _loop(key) {
+          if (key.includes('Parts') && _this2.target[key].length > 0) {
+            _this2.target[key].forEach(function (ele, index) {
+              _this2.target[key].splice(index, 1, _sql_part2.default.create(ele.part));
+            });
+          } else if (key.includes('Segment')) {
+            _this2.target[key] = _this2.uiSegmentSrv.newSegment({ "value": _this2.target[key].value, "fake": true });
+          } else {
+            _this2.target.type = _this2.target.type;
+          }
+        };
+
+        for (var key in this.target) {
+          _loop(key);
+        }
+        if (this.target.joinQueryList.length > 0) {
+          this.target.joinQueryList.forEach(function (ele, index) {
+            var _loop2 = function _loop2(key) {
+              if (Array.isArray(ele[key] && ele[key].length > 0)) {
+                ele[key].forEach(function (element, i) {
+                  ele[key].splice(i, 0, _sql_part2.default.create(element.part));
+                });
+              } else if (key.includes('Add')) {
+                ele[key] = _this2.uiSegmentSrv.newPlusButton();
+              } else if (key == 'type') {
+                ele[key] = ele.type;
+              } else if (key == 'table' || key == 'limit') {
+                ele[key] = _this2.uiSegmentSrv.newSegment({ "value": ele[key].value, "fake": true });
+              }
+            };
+
+            for (var key in ele) {
+              _loop2(key);
+            }
+          });
+        }
+      }
+    }
+  }, {
+    key: 'onDataRefresh',
+    value: function onDataRefresh() {
+      // console.log('数据重新加载了');
+    }
+  }, {
     key: 'getTableSegments',
     value: function getTableSegments() {
-      var _this2 = this;
+      var _this3 = this;
 
       var tableName = this.target.table;
       var parth = 'getList';
       this.datasource.metricFindOption(tableName, parth).then(function (result) {
         if (result.status === 200) {
-          _this2.target.tableSelect = result.data.data.tables[0].rows;
+          _this3.target.tableSelect = result.data.data.tables[0].rows;
         }
       });
     }
   }, {
     key: 'transformToSegments',
     value: function transformToSegments() {
-      var _this3 = this;
+      var _this4 = this;
 
       return function (result) {
         var segments = _lodash2.default.map(results, function (segment) {
-          return _this3.uiSegmentSrv.newSegment({
+          return _this4.uiSegmentSrv.newSegment({
             value: segment.text,
             expandable: segment.expandable
           });
@@ -271,6 +238,18 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       this.updateRestSql();
     }
   }, {
+    key: 'onLimitQueryChanged',
+    value: function onLimitQueryChanged() {
+      this.target.queryLimit = this.target.queryLimitSegment.value;
+      this.updateRestSql();
+    }
+  }, {
+    key: 'onLimitJoinChanged',
+    value: function onLimitJoinChanged(joinIndex) {
+      this.target.joinQueryList[joinIndex].limit = this.uiSegmentSrv.newSegment({ "value": this.target.joinQueryList[joinIndex].limit.value || '1000', "fake": true });
+      this.updateRestSql();
+    }
+  }, {
     key: 'addSelectionAction',
     value: function addSelectionAction(part, index) {
       console.log(1111, part, index);
@@ -327,7 +306,6 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       var express = _sql_part2.default.create({ type: 'expression', params: ['column', '=', 'value'] });
 
       this.target.whereParts.push(express);
-
       this.resetPlusButton(this.whereAdd);
     }
   }, {
@@ -520,6 +498,12 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       this.resetPlusButton(this.target.joinQueryList[joinIndex].exportAdd);
     }
   }, {
+    key: 'onJoinLimitChanged',
+    value: function onJoinLimitChanged(joinIndex) {
+      this.target.joinQueryList[joinIndex].limit = this.target.joinQueryList[joinIndex].limit.value;
+      this.updateRestSql();
+    }
+  }, {
     key: 'handleJoinExportPartEvent',
     value: function handleJoinExportPartEvent(part, joinIndex, expIndex, event) {
       console.log("handleJoinExportPartEvent", event);
@@ -615,7 +599,8 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         on: [],
         onAdd: this.uiSegmentSrv.newPlusButton(),
         export: [],
-        exportAdd: this.uiSegmentSrv.newPlusButton()
+        exportAdd: this.uiSegmentSrv.newPlusButton(),
+        limit: this.uiSegmentSrv.newSegment({ "value": '1000', "fake": true })
       };
       this.target.joinQueryList.push(queryObj);
       console.log("addJoin", this.target.joinQueryList);
@@ -665,7 +650,7 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
   }, {
     key: 'updateRestSql',
     value: function updateRestSql() {
-      var _this4 = this;
+      var _this5 = this;
 
       // 将输入的内容更新到target中去
 
@@ -688,10 +673,12 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
 
       // udpate table
       this.target.query.select.from = this.target.table;
+      // update queryLimit
+      this.target.query.select.limit = parseInt(this.target.queryLimit);
 
       // update select fields
       this.target.selectionsParts.forEach(function (part) {
-        _this4.target.query.select.fields.push(part.params[0]);
+        _this5.target.query.select.fields.push(part.params[0]);
       });
 
       // update where
@@ -713,19 +700,19 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
         var key = '' + part.params[0] + suffix;
         if (part.params[1] === "IN") {
           console.log("whereTest", part.params[2], _typeof(part.params[2]));
-          _this4.target.query.select.filter[key] = JSON.parse(part.params[2]);
+          _this5.target.query.select.filter[key] = JSON.parse(part.params[2]);
         } else {
           if (part.params[2].startsWith("\"") && part.params[2].endsWith("\"") || part.params[2].startsWith("\'") && part.params[2].endsWith("\'")) {
             var tmpStr = part.params[2];
-            _this4.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
+            _this5.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
             // console.log(this.target.query.select);
           } else if (!isNaN(parseFloat(part.params[2]))) {
-            _this4.target.query.select.filter[key] = parseFloat(part.params[2]);
-            console.log(_this4.target.query.select);
+            _this5.target.query.select.filter[key] = parseFloat(part.params[2]);
+            console.log(_this5.target.query.select);
           } else if (part.params[2].toLowerCase() === "true") {
-            _this4.target.query.select.filter[key] = true;
+            _this5.target.query.select.filter[key] = true;
           } else if (part.params[2].toLowerCase() === "false") {
-            _this4.target.query.select.filter[key] = false;
+            _this5.target.query.select.filter[key] = false;
           } else {
             return Promise.reject({
               message: 'tetete'
@@ -743,13 +730,13 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
             aggFunc = _part$params2[0],
             field = _part$params2[1];
 
-        _this4.target.query.select.aggregation.push([field, aggFunc].join("__"));
+        _this5.target.query.select.aggregation.push([field, aggFunc].join("__"));
       });
 
       // update group by
       this.target.groupParts.forEach(function (part) {
         console.log("groupParts", part);
-        _this4.target.query.select.group_by.push(part.params[0]);
+        _this5.target.query.select.group_by.push(part.params[0]);
       });
 
       // update join
@@ -823,20 +810,22 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
           console.log("joinQuery");
           joinQuery.export.push(part.params.join("@"));
         });
-        _this4.target.query.join.push(joinQuery);
+        // update joinLimit
+        joinQuery.limit = parseInt(query.limit.value);
+        _this5.target.query.join.push(joinQuery);
       });
 
       // update sort
       this.target.sortParts.forEach(function (part) {
         console.log("sortParts", part);
         var sortExp = part.params[0] === "asc" ? part.params[1] : '-' + part.params[1];
-        _this4.target.query.sort.push(sortExp);
+        _this5.target.query.sort.push(sortExp);
       });
 
       //update fields
       this.target.fieldParts.forEach(function (part) {
         console.log("fieldParts", part.params[0], '5555555555');
-        _this4.target.query.fields.push(part.params.join("@"));
+        _this5.target.query.fields.push(part.params.join("@"));
       });
 
       // update limit
@@ -848,8 +837,10 @@ var GenericDatasourceQueryCtrl = exports.GenericDatasourceQueryCtrl = function (
       // this.target.target = this.target.query;
 
       // console.log(this.target, this.target.query);
+
       this.target.whereParts = this.target.whereParts;
-      // console.log("UpdateComplete", this.target.selectionsParts);
+
+      console.log("UpdateComplete", this);
       // this.datasource.metricFindQuery(JSON.stringify(this.target.query) || '');
       // this.datasource.query(this.target.query);
       this.panelCtrl.refresh();

@@ -6,7 +6,7 @@ import sqlPart from './sql_part';
 import { PanelEvents } from '@grafana/data';
 import { MetricsPanelCtrl } from 'app/plugins/sdk';
 export class GenericDatasourceQueryCtrl extends QueryCtrl {
-
+  
   constructor($scope, $injector, uiSegmentSrv, $q) {
     super($scope, $injector);
     this.scope = $scope;
@@ -15,13 +15,18 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.lastQueryError = null;
     this.panelCtrl.events.on(PanelEvents.dataReceived, this.onDataReceived.bind(this), $scope);
     this.panelCtrl.events.on(PanelEvents.dataError, this.onDataError.bind(this), $scope);
+    
+    this.panelCtrl.events.on(PanelEvents.render, this.onDataRefresh.bind(this), $scope)
+    console.log(this, '11111111111111111111');
+    this.joinQueryList = this.joinQueryList || [];
+    this.updateProjection()
 
     this.target.tableSelect = this.target.tableSelect || [];
 
     this.formats = [
       { text: 'Time series', value: 'grafana.timeserie' },
       { text: 'Table', value: 'grafana.table' },
-      
+
     ];
     this.types = [
       { text: 'Left Join', value: 'left_join' },
@@ -29,130 +34,37 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       { text: 'Full Join', value: 'full_join' }
     ];
 
-    console.log(this, '11111111111111111111');
 
     // this.target.tableSegment = null;
     this.target.target = this.target.target || '';
-    this.target.type = this.target.type ||   'grafana.timeserie';
+    this.target.type = this.target.type || 'grafana.timeserie';
 
     this.target.tableSegment = this.uiSegmentSrv.newSegment({ "value": this.target.table || 'select table', "fake": true });
     this.target.table = this.target.table || this.target.tableSegment.value;
 
-
-
-    if (this.target.selectionsParts) {
-      let selectionsList = []
-      this.target.selectionsParts.forEach(element => {
-        if (element.__proto__.toLocaleString) {
-          const express = sqlPart.create(element.part)
-          selectionsList.push(express);
-        }
-        this.target.selectionsParts = selectionsList
-      });
-    } else {
-      this.target.selectionsParts = [];
-    }
-
+    this.target.selectionsParts = this.target.selectionsParts || []
     this.selectionAdd = this.uiSegmentSrv.newPlusButton();
 
     this.selectMenu = [];
     this.selectMenu.push(this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
-
-
-    if (this.target.whereParts) {
-      let whereList = []
-      this.target.whereParts.forEach(element => {
-        if (element.__proto__.toLocaleString) {
-          const express = sqlPart.create(element.part)
-          whereList.push(express);
-        }
-        this.target.whereParts = whereList
-      });
-    } else {
-      this.target.whereParts = [];
-    }
-
+    // this.selectionsParts = this.selectionsParts || [];
+    this.target.whereParts = this.target.whereParts || []
     this.whereAdd = this.uiSegmentSrv.newPlusButton();
-
-
     this.target.aggParts = this.target.aggParts || [];
-    if (this.target.aggParts) {
-      let aggList = []
-      this.target.aggParts.forEach(element => {
-        if (element.__proto__.toLocaleString) {
-          const express = sqlPart.create(element.part)
-          aggList.push(express);
-        }
-        this.target.aggParts = aggList
-      });
-    } else {
-      this.target.aggParts = [];
-    }
     this.aggAdd = this.uiSegmentSrv.newPlusButton();
-
-    if (this.target.groupParts) {
-      let groupList = []
-      this.target.groupParts.forEach(element => {
-        if (element.__proto__.toLocaleString) {
-          const express = sqlPart.create(element.part)
-          groupList.push(express);
-        }
-        this.target.groupParts = groupList
-      });
-    } else {
-      this.target.groupParts = [];
-    }
-
-
+    this.target.groupParts = this.target.groupParts || []
     this.groupAdd = this.uiSegmentSrv.newPlusButton();
-
-    if (this.target.joinQueryList) {
-      let joinQueryList = []
-      this.target.joinQueryList.forEach(element => {
-        if (element.__proto__.toLocaleString) {
-          const express = sqlPart.create(element.part)
-          joinQueryList.push(express);
-        }
-        this.target.joinQueryList = joinQueryList
-      });
-    } else {
-      this.target.joinQueryList = [];
-    }
-
-
-    if (this.target.sortParts) {
-      let sortList = []
-      this.target.sortParts.forEach(element => {
-        if (element.__proto__.toLocaleString) {
-          const express = sqlPart.create(element.part)
-          sortList.push(express);
-        }
-        this.target.sortParts = sortList
-      });
-    } else {
-      this.target.sortParts = [];
-    }
-
+    this.target.joinQueryList = this.target.joinQueryList||[]
+    
+    this.target.sortParts = this.target.sortParts || [];
     this.sortAdd = this.uiSegmentSrv.newPlusButton();
-
-    if (this.target.fieldParts) {
-      let fieldList = []
-      this.target.fieldParts.forEach(element => {
-        if (element.__proto__.toLocaleString) {
-          const express = sqlPart.create(element.part)
-          fieldList.push(express);
-        }
-        this.target.fieldParts = fieldList
-      });
-    } else {
-      this.target.fieldParts = [];
-    }
-
-
+    this.target.fieldParts = this.target.fieldParts || []
     this.fieldAdd = this.uiSegmentSrv.newPlusButton();
 
     this.target.limitSegment = this.uiSegmentSrv.newSegment({ "value": this.target.limit || '1000', "fake": true });
     this.target.limit = this.target.limitSegment.value || '1000';
+    this.target.queryLimitSegment = this.uiSegmentSrv.newSegment({ "value": this.target.queryLimit || '1000', "fake": true });
+    this.target.queryLimit = this.target.queryLimitSegment.value || '1000';
     this.target.query = {
       // restSql协议结构定义
       "select": {
@@ -168,6 +80,43 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       "limit": 200
     };
 
+  }
+  updateProjection() {
+    if (this.target.target ) {
+      for (const key in this.target) {
+        if (key.includes('Parts')&&this.target[key].length>0) {
+          this.target[key].forEach((ele, index) => {
+            this.target[key].splice(index,1,sqlPart.create(ele.part))
+          })
+        } else if (key.includes('Segment')) {
+            this.target[key] = this.uiSegmentSrv.newSegment({ "value": this.target[key].value,"fake":true})
+        } else {
+          this.target.type = this.target.type
+        }
+      }
+      if (this.target.joinQueryList.length > 0) {
+        this.target.joinQueryList.forEach((ele, index) => {
+          for (const key in ele) {
+            if (Array.isArray(ele[key] && ele[key].length > 0)) {
+              ele[key].forEach((element, i) => {
+                ele[key].splice(i, 0, sqlPart.create(element.part))
+              })
+            } else if (key.includes('Add')) {
+              ele[key] = this.uiSegmentSrv.newPlusButton()
+            } else if (key == 'type') {
+              ele[key] = ele.type
+            } else if (key == 'table'||key=='limit') {
+              ele[key] = this.uiSegmentSrv.newSegment({ "value": ele[key].value, "fake": true })
+            }
+          }
+        })
+      }
+    }
+   
+    
+  }
+  onDataRefresh() {
+    // console.log('数据重新加载了');
   }
   getTableSegments() {
     let tableName = this.target.table;
@@ -236,6 +185,14 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.target.limit = this.target.limitSegment.value;
     this.updateRestSql();
   }
+  onLimitQueryChanged() {
+    this.target.queryLimit = this.target.queryLimitSegment.value;
+    this.updateRestSql()
+  }
+  onLimitJoinChanged(joinIndex) {
+    this.target.joinQueryList[joinIndex].limit = this.uiSegmentSrv.newSegment({ "value": this.target.joinQueryList[joinIndex].limit.value || '1000', "fake": true });
+    this.updateRestSql()
+  }
 
   addSelectionAction(part, index) {
     console.log(1111, part, index);
@@ -243,7 +200,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     const express = sqlPart.create({ type: 'column', params: ['column'] });
     this.target.selectionsParts.push(express);
     this.resetPlusButton(this.selectionAdd);
-
   }
 
   handleSelectionsPartEvent(part, index, event) {
@@ -291,9 +247,9 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     const express = sqlPart.create({ type: 'expression', params: ['column', '=', 'value'] });
 
     this.target.whereParts.push(express);
-
     this.resetPlusButton(this.whereAdd);
   }
+
 
   handleWherePartEvent(part, index, event) {
     // console.log("handleWherePartEvent", event);
@@ -469,6 +425,10 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.target.joinQueryList[joinIndex].export.push(express);
     this.resetPlusButton(this.target.joinQueryList[joinIndex].exportAdd);
   }
+  onJoinLimitChanged(joinIndex) {
+    this.target.joinQueryList[joinIndex].limit = this.target.joinQueryList[joinIndex].limit.value;
+    this.updateRestSql();
+  }
 
   handleJoinExportPartEvent(part, joinIndex, expIndex, event) {
     console.log("handleJoinExportPartEvent", event);
@@ -559,7 +519,8 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       on: [],
       onAdd: this.uiSegmentSrv.newPlusButton(),
       export: [],
-      exportAdd: this.uiSegmentSrv.newPlusButton()
+      exportAdd: this.uiSegmentSrv.newPlusButton(),
+      limit: this.uiSegmentSrv.newSegment({ "value": '1000', "fake": true }),
     };
     this.target.joinQueryList.push(queryObj);
     console.log("addJoin", this.target.joinQueryList);
@@ -621,11 +582,15 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
     // udpate table
     this.target.query.select.from = this.target.table;
+    // update queryLimit
+    this.target.query.select.limit = parseInt(this.target.queryLimit);
 
     // update select fields
     this.target.selectionsParts.forEach((part) => {
       this.target.query.select.fields.push(part.params[0]);
     });
+
+  
 
     // update where
     const operatorToSuffix = {
@@ -753,6 +718,8 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
         console.log("joinQuery");
         joinQuery.export.push(part.params.join("@"));
       });
+      // update joinLimit
+      joinQuery.limit = parseInt(query.limit.value);
       this.target.query.join.push(joinQuery);
     });
 
@@ -778,8 +745,10 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     // this.target.target = this.target.query;
 
     // console.log(this.target, this.target.query);
+
     this.target.whereParts = this.target.whereParts;
-    // console.log("UpdateComplete", this.target.selectionsParts);
+
+    console.log("UpdateComplete", this);
     // this.datasource.metricFindQuery(JSON.stringify(this.target.query) || '');
     // this.datasource.query(this.target.query);
     this.panelCtrl.refresh();

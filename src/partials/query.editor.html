@@ -30,9 +30,9 @@
         <span>SELECT</span>
       </label>
       </div>
-      <div class="gf-form" ng-repeat="part in ctrl.target.selectionsParts">
+      <div class="gf-form" ng-repeat="part in ctrl.target.selectionsParts track by $index">
         <sql-part-editor  part="part" class="gf-form-label sql-part"
-          handle-event="ctrl.handleSelectionsPartEvent(part,target.selectionsParts, $event)"
+          handle-event="ctrl.handleSelectionsPartEvent(part,$index, $event)"
          
           >
         </sql-part-editor>
@@ -138,7 +138,10 @@
       <div class="gf-form-label gf-form-label--grow"></div>
     </div>
   </div>
-
+<div class="gf-form-inline" >
+    <label class="gf-form-label query-keyword width-8">LIMIT</label>
+    <metric-segment segment="ctrl.target.queryLimitSegment" on-change="ctrl.onLimitQueryChanged()"></metric-segment>
+  </div>
 
   <!--QUERY-->
   <div ng-repeat="query in ctrl.target.joinQueryList track by $index" ng-init="joinIndex = $index" class="form-body">
@@ -333,7 +336,12 @@
       </div>
     </div>
 
-
+  <!-- LIMIT -->
+   <div class="gf-form-inline">
+     <label class="gf-form-label query-keyword width-8">LIMIT</label>
+     <metric-segment   segment="ctrl.target.joinQueryList[joinIndex].limit" on-change="ctrl.onLimitJoinChanged(joinIndex)">
+     </metric-segment>
+   </div>
   </div>
   <br>
   <button class="btn btn-secondary" gf-form-btn ng-click="ctrl.addJoin()">JOIN</button>
