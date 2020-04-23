@@ -3,6 +3,7 @@ import _ from "lodash";
 export class GenericDatasource {
 
   constructor(instanceSettings, $q, backendSrv, templateSrv) {
+    console.log('3333333', this);
     // console.log("instanceSettings", instanceSettings);
     this.type = instanceSettings.type;
     this.url = instanceSettings.url;
@@ -16,31 +17,14 @@ export class GenericDatasource {
       this.headers['Authorization'] = instanceSettings.basicAuth;
     }
   }
-
+// query
   query(options) {
-    // console.log("query222333Options", options,'1234567');
     var query = this.buildQueryParameters(options);
-    // query.targets = query.targets.filter(t => !t.hide)
-    // console.log("query222333Query", this.url);
 
     if(options.targets.length <= 0) {
       return this.q.when({data: []});
     }
 
-    // if (query.targets.length <= 0) {
-    //   return this.q.when({data: []});
-    // }
-
-    // if (this.templateSrv.getAdhocFilters) {
-    //   query.adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-    // } else {
-    //   query.adhocFilters = [];
-    // }
-    // return this.doRequest({
-    //   url: this.url + '/query',
-    //   data: query,
-    //   method: 'POST'
-    // });
     const queryStr = `?query=${options.targets[0].target}`;
     const formatStr = `&datatype=${options.targets[0].type}`;
     
@@ -85,11 +69,11 @@ export class GenericDatasource {
   }
 
   metricFindQuery(query) {
-    console.log("metricFindQuery", query);
+    console.log("metricFindQuery", query, this.url);
     var interpolated = {
         target: this.templateSrv.replace(query, null, 'regex')
     };
-    console.log("metricFindQuery", query);
+    console.log("metricFindQuery", interpolated);
     return this.doRequest({
       url: this.url + '/search',
       data: interpolated,
@@ -104,15 +88,16 @@ export class GenericDatasource {
     return this.backendSrv
       .datasourceRequest({
         // url: '/api/tsdb/query',
-        url:'https://easy-mock.com/mock/5e7820fa4ecfa92432bfd6f1/'+parth,
+        url:'http://mock.studyinghome.com/mock/5e74382b8c3c6c22c4271aea/example_copy/'+parth,
         method: 'POST',
-        data: data,
+        data
       })
       .then((result) => {return result});
   }
 
 
   mapToTextValue(result) {
+    console.log(result,'🙃');
     return _.map(result.data, (d, i) => {
       if (d && d.text && d.value) {
         return { text: d.text, value: d.value };
@@ -130,15 +115,25 @@ export class GenericDatasource {
     return this.backendSrv.datasourceRequest(options);
   }
 
+  // filter targets.target
   buildQueryParameters(options) {
-    //remove placeholder targets
     options.targets = _.filter(options.targets, target => {
       return target.target !== 'select metric';
     });
 
     var targets = _.map(options.targets, target => {
+      const queryRow = this.templateSrv.replace(target.target, options.scopedVars, 'regex');
+      var query = JSON.parse(queryRow);
+      if (query.select.aggregation.length > 0) {
+        this.filterAggregation(query.select.aggregation )
+      }
+      query.join.forEach(element => {
+        if (element.query.select.aggregation.length > 0) {
+          this.filterAggregation(element.query.select.aggregation )
+        }
+      });
       return {
-        target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+        target: JSON.stringify(query),
         refId: target.refId,
         hide: target.hide,
         type: target.type || 'timeserie'
@@ -148,6 +143,29 @@ export class GenericDatasource {
     options.targets = targets;
 
     return options;
+  }
+//  filter query aggregation
+  filterAggregation(array) {
+    const varables = []
+    this.templateSrv.variables.forEach(ele => {
+      varables.push({
+        name: '$' + ele.name,
+        value: ele.current.value
+      })
+    });
+    varables.forEach(element => {
+      if (array.length > 0) {
+        array.forEach((ele, index) => {
+          console.log(ele.startsWith(element.name), '222');
+          if (ele.startsWith(element.name)) {
+            var field = ele.split('__')
+            field[0] = "(" + element.value.join(',') + ")"
+            array.splice(index, 1, [field[0], field[1]].join('__'))
+          }
+        })
+      }
+
+    })
   }
 
   getTagKeys(options) {

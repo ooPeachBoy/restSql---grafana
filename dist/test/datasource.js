@@ -19,6 +19,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
   function GenericDatasource(instanceSettings, $q, backendSrv, templateSrv) {
     _classCallCheck(this, GenericDatasource);
 
+    console.log('3333333', this);
     // console.log("instanceSettings", instanceSettings);
     this.type = instanceSettings.type;
     this.url = instanceSettings.url;
@@ -36,6 +37,8 @@ var GenericDatasource = exports.GenericDatasource = function () {
   _createClass(GenericDatasource, [{
     key: 'query',
     value: function query(options) {
+      console.log(options, '😋', '😀😡🐷');
+
       // console.log("query222333Options", options,'1234567');
       var query = this.buildQueryParameters(options);
       // query.targets = query.targets.filter(t => !t.hide)
@@ -82,6 +85,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'annotationQuery',
     value: function annotationQuery(options) {
+      console.log('444444444444');
       var query = this.templateSrv.replace(options.annotation.query, {}, 'glob');
       var annotationQuery = {
         range: options.range,
@@ -106,13 +110,14 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'metricFindQuery',
     value: function metricFindQuery(query) {
-      console.log("metricFindQuery", query);
+      console.log("metricFindQuery", query, this.url);
       var interpolated = {
         target: this.templateSrv.replace(query, null, 'regex')
       };
-      console.log("metricFindQuery", query);
+      console.log("metricFindQuery", interpolated);
       return this.doRequest({
-        url: this.url + '/search',
+        // url: this.url + '/search',
+        url: "http://mock.studyinghome.com/mock/5e74382b8c3c6c22c4271aea/example_copy/gitpid",
         data: interpolated,
         method: 'POST'
       }).then(this.mapToTextValue);
@@ -127,7 +132,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
       };
       return this.backendSrv.datasourceRequest({
         // url: '/api/tsdb/query',
-        url: 'https://easy-mock.com/mock/5e7820fa4ecfa92432bfd6f1/' + parth,
+        url: 'http://mock.studyinghome.com/mock/5e74382b8c3c6c22c4271aea/example_copy/' + parth,
         method: 'POST',
         data: data
       }).then(function (result) {
@@ -137,6 +142,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'mapToTextValue',
     value: function mapToTextValue(result) {
+      console.log(result, '🙃');
       return _lodash2.default.map(result.data, function (d, i) {
         if (d && d.text && d.value) {
           return { text: d.text, value: d.value };
@@ -149,6 +155,7 @@ var GenericDatasource = exports.GenericDatasource = function () {
   }, {
     key: 'doRequest',
     value: function doRequest(options) {
+      console.log('2222222', options);
       options.withCredentials = this.withCredentials;
       options.headers = this.headers;
 
@@ -159,14 +166,29 @@ var GenericDatasource = exports.GenericDatasource = function () {
     value: function buildQueryParameters(options) {
       var _this = this;
 
-      //remove placeholder targets
+      console.log('111111111', options);
       options.targets = _lodash2.default.filter(options.targets, function (target) {
         return target.target !== 'select metric';
       });
 
       var targets = _lodash2.default.map(options.targets, function (target) {
+        var queryRow = _this.templateSrv.replace(target.target, options.scopedVars, 'regex');
+
+        var query = JSON.parse(queryRow);
+        if (query.select.aggregation.length > 0) {
+          _this.filterAggregation(query.select.aggregation);
+        }
+
+        query.join.forEach(function (element) {
+          if (element.query.select.aggregation.length > 0) {
+            _this.filterAggregation(element.query.select.aggregation);
+          }
+        });
+
+        console.log(query, '111');
+
         return {
-          target: _this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+          target: JSON.stringify(query),
           refId: target.refId,
           hide: target.hide,
           type: target.type || 'timeserie'
@@ -176,6 +198,29 @@ var GenericDatasource = exports.GenericDatasource = function () {
       options.targets = targets;
 
       return options;
+    }
+  }, {
+    key: 'filterAggregation',
+    value: function filterAggregation(array) {
+      var varables = [];
+      this.templateSrv.variables.forEach(function (ele) {
+        varables.push({
+          name: '$' + ele.name,
+          value: ele.current.value
+        });
+      });
+      varables.forEach(function (element) {
+        if (array.length > 0) {
+          array.forEach(function (ele, index) {
+            console.log(ele.startsWith(element.name), '222');
+            if (ele.startsWith(element.name)) {
+              var field = ele.split('__');
+              field[0] = "(" + element.value.join(',') + ")";
+              array.splice(index, 1, [field[0], field[1]].join('__'));
+            }
+          });
+        }
+      });
     }
   }, {
     key: 'getTagKeys',

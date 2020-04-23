@@ -16,7 +16,6 @@
     <div class="gf-form">
       <label class="gf-form-label query-keyword width-8">FROM</label>
       <metric-segment segment="ctrl.target.tableSegment"  on-change="ctrl.onTableChanged()"
-      
       >
       </metric-segment>
     </div>
@@ -152,7 +151,9 @@
         <label class="gf-form-label query-keyword width-8">TYPE</label>
         <div class="gf-form-select-wrapper">
           <select class="gf-form-input gf-size-auto" ng-model="ctrl.target.joinQueryList[joinIndex].type"
-            ng-options="f.value as f.text for f in ctrl.types"></select>
+            ng-options="f.value as f.text for f in ctrl.types"
+            ng-change='ctrl.onJoinTypeChange()'
+            ></select>
         </div>
       </div>
       <div class="gf-form gf-form--grow">

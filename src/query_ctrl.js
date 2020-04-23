@@ -17,7 +17,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.panelCtrl.events.on(PanelEvents.dataError, this.onDataError.bind(this), $scope);
     
     this.panelCtrl.events.on(PanelEvents.render, this.onDataRefresh.bind(this), $scope)
-    console.log(this, '11111111111111111111');
     this.joinQueryList = this.joinQueryList || [];
     this.updateProjection()
 
@@ -65,7 +64,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.target.limit = this.target.limitSegment.value || '1000';
     this.target.queryLimitSegment = this.uiSegmentSrv.newSegment({ "value": this.target.queryLimit || '1000', "fake": true });
     this.target.queryLimit = this.target.queryLimitSegment.value || '1000';
-    this.target.query = {
+    this.target.query = this.target.query|| {
       // restSql协议结构定义
       "select": {
         "from": "",
@@ -80,7 +79,15 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       "limit": 200
     };
 
+    this.varables = this.varables|| []
+    this.panelCtrl.datasource.templateSrv.variables.forEach(ele => {
+      this.varables.push({
+        name:'$'+ ele.name,
+        value: ele.current.value
+      })
+    });
   }
+  // 数据回填
   updateProjection() {
     if (this.target.target ) {
       for (const key in this.target) {
@@ -112,21 +119,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
         })
       }
     }
-   
-    
-  }
-  onDataRefresh() {
-    // console.log('数据重新加载了');
-  }
-  getTableSegments() {
-    let tableName = this.target.table;
-    let parth = 'getList';
-    this.datasource.metricFindOption(tableName, parth).then(result => {
-      if (result.status === 200) {
-        this.target.tableSelect = result.data.data.tables[0].rows;
-      }
-    })
-
   }
   transformToSegments() {
     return (result) => {
@@ -150,11 +142,10 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     }
 
   }
-
+// 
   getOptions() {
     const options = [];
     options.push(this.uiSegmentSrv.newSegment({ type: 'expression', value: 'Expression' }));
-    console.log("tttttt getOptions", options);
     return Promise.resolve(options);
   }
 
@@ -164,10 +155,12 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   onFormatChanged() {
-    console.log("onFormatChanged", this);
     this.updateRestSql();
   }
-
+  onJoinTypeChange() {
+    this.updateRestSql();
+  }
+// 下拉关联
   onTableChanged() {
     console.log("tableChanged", this, this.target.tableSegment.value);
     this.target.table = this.target.tableSegment.value;
@@ -181,13 +174,10 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   onJoinTableChanged(joinIndex) {
-    console.log("onJoinTableChanged", joinIndex);
-    // this.target.joinQueryList[joinIndex].table = ;
     this.updateRestSql();
   }
 
   onLimitChanged() {
-    // console.log("onLimitChanged");
     this.target.limit = this.target.limitSegment.value;
     this.updateRestSql();
   }
@@ -201,7 +191,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   addSelectionAction(part, index) {
-    console.log(1111, part, index);
     this.getOptions()
     const express = sqlPart.create({ type: 'column', params: ['column'] });
     this.target.selectionsParts.push(express);
@@ -209,18 +198,14 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   handleSelectionsPartEvent(part, index, event) {
-    console.log("tttttt handleSelectionsPartEvent", event, index, part, '---');
-    // if (event.name = "get-param-options")
     if (event.name === "get-part-actions") {
       return this.$q.when([{ text: 'Remove', value: 'remove' }]);
 
     } else if (event.name === "action" && event.action.value === "remove") {
       this.removePart(this.target.selectionsParts, part);
-      // this.target.selectionsParts.splice(index, 1, null);
       this.updateRestSql()
       console.log(this.target.selectionsParts, '------')
     } else if (event.name === "part-param-changed") {
-      console.log(this.target.selectionsParts);
       this.target.selectionsParts.forEach((item, i) => {
       })
       this.updateRestSql();
@@ -230,18 +215,15 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   addJoinSelectionAction(joinIndex, expIndex) {
-    console.log("addJoinSelectionAction", joinIndex, expIndex);
     const express = sqlPart.create({ type: 'column', params: ['column'] });
     this.target.joinQueryList[joinIndex].selections.push(express)
     this.resetPlusButton(this.target.joinQueryList[joinIndex].selectionAdd);
   }
 
   handleJoinSelectionsPartEvent(part, joinIndex, expIndex, event) {
-    console.log("handleJoinSelectionsPartEvent", joinIndex, expIndex);
     if (event.name === "get-part-actions") {
       return this.$q.when([{ text: 'Remove', value: 'remove' }]);
     } else if (event.name === "action" && event.action.value === "remove") {
-      // this.removePart(this.target.joinQueryList[joinIndex].selections, part);
       this.target.joinQueryList[joinIndex].selections.splice(expIndex, 1);
       this.updateRestSql()
     } else if (event.name === "part-param-changed") {
@@ -251,14 +233,12 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   addWhereAction(part, index) {
     const express = sqlPart.create({ type: 'expression', params: ['column', '=', 'value'] });
-
     this.target.whereParts.push(express);
     this.resetPlusButton(this.whereAdd);
   }
 
 
   handleWherePartEvent(part, index, event) {
-    // console.log("handleWherePartEvent", event);
     if (event.name === "get-param-options" && event.param.name === "op") {
       // 暂时只支持展开操作符列表
       const operators = ['=', '<', '<=', '>', '>=', 'CONTAINS', 'STARTSWITH', 'ENDSWITH', 'RANGE', 'IN'];
@@ -269,6 +249,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       this.target.whereParts.splice(index, 1);
       this.updateRestSql()
     } else if (event.name === "part-param-changed") {
+      console.log(part,index,'😎');
       this.updateRestSql();
     } else {
       return Promise.resolve([]);
@@ -277,7 +258,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   addJoinWhereAction(joinIndex, expIndex) {
     const express = sqlPart.create({ type: 'expression', params: ['column', '=', 'value'] });
-    console.log("addWhereAction", express);
     this.target.joinQueryList[joinIndex].where.push(express);
     this.resetPlusButton(this.target.joinQueryList[joinIndex].whereAdd);
   }
@@ -376,7 +356,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
   }
 
   handleJoinGroupPartEvent(part, joinIndex, expIndex, event) {
-    console.log("handleJoinGroupPartEvent");
     if (event.name === "get-part-actions") {
       return this.$q.when([{ text: 'Remove', value: 'remove' }]);
     } else if (event.name === "action" && event.action.value === "remove") {
@@ -389,7 +368,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   addJoinOnAction(part, joinIndex, expIndex) {
     const express = sqlPart.create({ type: 'on', params: ['field', 'field'] });
-    console.log("addJoinOnAction", express);
     this.target.joinQueryList[joinIndex].on.push(express);
     this.resetPlusButton(this.target.joinQueryList[joinIndex].onAdd);
   }
@@ -427,7 +405,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   addJoinExportAction(part, joinIndex, expIndex) {
     const express = sqlPart.create({ type: 'alias', params: ['fields', 'alias'] });
-    console.log("addJoinOnAction", express);
     this.target.joinQueryList[joinIndex].export.push(express);
     this.resetPlusButton(this.target.joinQueryList[joinIndex].exportAdd);
   }
@@ -465,11 +442,8 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     if (event.name === "get-part-actions") {
       return this.$q.when([{ text: 'Remove', value: 'remove' }]);
     } else if (event.name === "action" && event.action.value === "remove") {
-      // console.log(this.target.sortParts,'====');
-
       this.target.sortParts.splice(index, 1);
       this.updateRestSql();
-      // console.log(this.target.sortParts,'====');
     } else if (event.name === "get-param-options" && event.param.name === "field") {
       return Promise.resolve(this.uiSegmentSrv.newOperators(this.getAllFields()));
     } else if (event.name === "part-param-changed") {
@@ -481,13 +455,11 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   addFieldAction(index) {
     const express = sqlPart.create({ type: 'alias', params: ['fields', 'alias'] });
-    console.log("addSortAction", index, express);
     this.target.fieldParts.push(express);
     this.resetPlusButton(this.fieldAdd);
   }
 
   handleFieldPartEvent(part, index, event) {
-    // console.log("handleFieldPartEvent", event);
     if (event.name === "get-part-actions") {
       return this.$q.when([{ text: 'Remove', value: 'remove' }]);
     } else if (event.name === "action" && event.action.value === "remove") {
@@ -529,7 +501,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       limit: this.uiSegmentSrv.newSegment({ "value": '1000', "fake": true }),
     };
     this.target.joinQueryList.push(queryObj);
-    console.log("addJoin", this.target.joinQueryList);
   }
   delJoin(index) {
     this.target.joinQueryList.splice(index, 1)
@@ -537,7 +508,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
   getAllFields() {
     // 获取select的字段，aggregate的字段，以及所有join表中的export字段
-
     const mainFields = this.getExportOptions(this.target.selectionsParts, this.target.aggParts);
     const exportFields = []
     this.target.joinQueryList.forEach((query) => {
@@ -561,15 +531,14 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       // export已经aggregation的字段
       console.log("handleJoinExportPartEvent", part);
       const [aggFunc, field] = part.params;
-      options.push([field, aggFunc].join("__"));
+      options.push([field, aggFunc].join(","));
+      // options.push([field, aggFunc].join("__"));
     });
     return options;
   }
 
   updateRestSql() {
     // 将输入的内容更新到target中去
-
-
     this.target.query = {
       // restSql协议结构定义
       "select": {
@@ -588,6 +557,7 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
     // udpate table
     this.target.query.select.from = this.target.table;
+   
     // update queryLimit
     this.target.query.select.limit = parseInt(this.target.queryLimit);
 
@@ -595,9 +565,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     this.target.selectionsParts.forEach((part) => {
       this.target.query.select.fields.push(part.params[0]);
     });
-
-  
-
     // update where
     const operatorToSuffix = {
       "=": "",
@@ -613,21 +580,21 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     }
     // ["1", "=", "1"]
     this.target.whereParts.forEach((part) => {
-
       const suffix = operatorToSuffix[part.params[1]];
       const key = `${part.params[0]}${suffix}`
       if (part.params[1] === "IN") {
-        console.log("whereTest", part.params[2], typeof part.params[2]);
         this.target.query.select.filter[key] = JSON.parse(part.params[2]);
 
       } else {
         if ((part.params[2].startsWith("\"") && part.params[2].endsWith("\"")) || (part.params[2].startsWith("\'") && part.params[2].endsWith("\'"))) {
           const tmpStr = part.params[2]
           this.target.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
-          // console.log(this.target.query.select);
         } else if (!isNaN(parseFloat(part.params[2]))) {
           this.target.query.select.filter[key] = parseFloat(part.params[2]);
-          console.log(this.target.query.select);
+          console.log( this.target.query.select.filter);
+        }
+        else if (Object.keys(this.varables).indexOf(part.params[2] )) {
+          this.target.query.select.filter[key] = part.params[2]
         }
         else if (part.params[2].toLowerCase() === "true") {
           this.target.query.select.filter[key] = true;
@@ -645,7 +612,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     // update aggregation
     // todo:agg func无法修改, 无法删除
     this.target.aggParts.forEach((part) => {
-      console.log("aggParts", part);
       const [aggFunc, field] = part.params;
       this.target.query.select.aggregation.push([field, aggFunc].join("__"));
     });
@@ -658,19 +624,15 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
     // update join
     this.target.joinQueryList.forEach((query) => {
-      console.log("joinQueryList", query);
       const joinQuery = {};
       // update join type
       joinQuery.type = query.type;
       joinQuery.query = { "select": {} };
-      console.log("joinQueryList", query);
       // update join table
       joinQuery.query.select.from = query.table.value;
-      console.log("joinQueryList", joinQuery.query.select.from);
       // update join fields
       joinQuery.query.select.fields = []
       query.selections.forEach((part) => {
-        console.log("selections", part);
         joinQuery.query.select.fields.push(part.params[0]);
       });
       // udpate join filter
@@ -678,12 +640,9 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       query.where.forEach((part) => {
         const suffix = operatorToSuffix[part.params[1]];
         const key = `${part.params[0]}${suffix}`;
-
         if (part.params[1] === "IN") {
-          console.log("whereTest", part.params[2], typeof part.params[2]);
           joinQuery.query.select.filter[key] = JSON.parse(part.params[2]);
         } else {
-          console.log("whereTest", part.params[2]);
           if ((part.params[2].startsWith("\"") && part.params[2].endsWith("\"")) || (part.params[2].startsWith("\'") && part.params[2].endsWith("\'"))) {
             const tmpStr = part.params[2]
             joinQuery.query.select.filter[key] = tmpStr.slice(1, tmpStr.length - 1);
@@ -694,23 +653,18 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
               message: 'tetete',
             });
           }
-
         }
-
-        console.log("joinfilter", key, joinQuery.query.select.filter);
       })
       // update aggregation 
       // todo:agg func无法修改
       joinQuery.query.select.aggregation = [];
       query.aggs.forEach((part) => {
-        console.log("join_aggregation", part);
         const [aggFunc, field] = part.params;
         joinQuery.query.select.aggregation.push([field, aggFunc].join("__"));
       });
       // update join group by
       joinQuery.query.select.group_by = [];
       query.groups.forEach((part) => {
-        // console.log("join_group", part);
         joinQuery.query.select.group_by.push(part.params[0]);
       });
       // update join on
@@ -721,7 +675,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
       // updaate export
       joinQuery.export = [];
       query.export.forEach((part) => {
-        console.log("joinQuery");
         joinQuery.export.push(part.params.join("@"));
       });
       // update joinLimit
@@ -738,7 +691,6 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
 
     //update fields
     this.target.fieldParts.forEach((part) => {
-      console.log("fieldParts", part.params[0], '5555555555');
       this.target.query.fields.push(part.params.join("@"));
     });
 
@@ -748,13 +700,14 @@ export class GenericDatasourceQueryCtrl extends QueryCtrl {
     // this.datasource.metricFindQuery(this.target.query || '').then(this.panelCtrl.refresh());
     // console.log(this.target, this.target.query);
     this.target.target = JSON.stringify(this.target.query);
+    // this.target.target.push(this.target.query)
     // this.target.target = this.target.query;
 
     // console.log(this.target, this.target.query);
 
-    this.target.whereParts = this.target.whereParts;
+    // this.target.whereParts = this.tasrget.whereParts;
 
-    console.log("UpdateComplete", this);
+   
     // this.datasource.metricFindQuery(JSON.stringify(this.target.query) || '');
     // this.datasource.query(this.target.query);
     this.panelCtrl.refresh();
